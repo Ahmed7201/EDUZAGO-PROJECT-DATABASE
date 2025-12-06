@@ -1,0 +1,52 @@
+@page "{courseId:int}"
+@model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ManageResourcesModel
+@{
+    ViewData["Title"] = "Manage Resources";
+}
+
+<div class="container mt-4">
+    <h2>Manage Resources for @Model.CourseTitle</h2>
+    <a asp-page="./Dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+    <div class="card mb-4">
+        <div class="card-header">Add New Resource</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Add">
+                <div class="form-group mb-3">
+                    <label>Resource Name</label>
+                    <input name="ResourceName" class="form-control" required />
+                </div>
+                <div class="form-group mb-3">
+                    <label>Link / File URL</label>
+                    <input name="ResourceLink" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-success">Upload Resource</button>
+            </form>
+        </div>
+    </div>
+
+    <h3>Current Resources</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Link</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var res in Model.Resources)
+            {
+                <tr>
+                    <td>@res.ResourceName</td>
+                    <td><a href="@res.Link" target="_blank">@res.Link</a></td>
+                    <td>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@res.ResourceID" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,57 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace.ManageCategoriesModel
+@{
+    ViewData["Title"] = "Manage Categories";
+}
+
+<div class="container mt-4">
+    <h2>Manage Categories</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">Add New Category</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Add">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group mb-3">
+                    <label asp-for="NewCategory.CategoryName" class="control-label"></label>
+                    <input asp-for="NewCategory.CategoryName" class="form-control" required />
+                    <span asp-validation-for="NewCategory.CategoryName" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="NewCategory.Description" class="control-label"></label>
+                    <input asp-for="NewCategory.Description" class="form-control" />
+                    <span asp-validation-for="NewCategory.Description" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Category</button>
+            </form>
+        </div>
+    </div>
+
+    <h3>Existing Categories</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Categories)
+            {
+                <tr>
+                    <td>@item.CategoryID</td>
+                    <td>@item.CategoryName</td>
+                    <td>@item.Description</td>
+                    <td>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.CategoryID" class="d-inline"
+                            onsubmit="return confirm('Are you sure? Deleting a category usually deletes dependent courses too via Cascade.');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

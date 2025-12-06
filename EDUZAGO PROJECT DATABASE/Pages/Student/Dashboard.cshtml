@@ -1,0 +1,47 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace.DashboardModel
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<div class="container mt-4">
+    <h1>Welcome, @Model.Student?.Name</h1>
+    <p>Email: @Model.Student?.Email</p>
+
+    <div class="mb-4">
+        <a asp-page="/Student/BrowseCourses" class="btn btn-primary">Browse & Enroll in Courses</a>
+    </div>
+
+    <h3>Your Enrolled Courses</h3>
+    @if (Model.EnrolledCourses.Count == 0)
+    {
+        <p>You are not enrolled in any courses yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Title</th>
+                    <th>Instructor</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var course in Model.EnrolledCourses)
+                {
+                    <tr>
+                        <td>@course.CourseCode</td>
+                        <td>@course.Title</td>
+                        <td>@course.Instructor?.Name</td>
+                        <td>
+                            <a asp-page="./CourseDetails" asp-route-courseId="@course.CourseCode"
+                                class="btn btn-sm btn-info">View Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

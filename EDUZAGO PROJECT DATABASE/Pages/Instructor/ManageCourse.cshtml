@@ -1,0 +1,51 @@
+@page "{id:int?}"
+@model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ManageCourseModel
+@{
+    ViewData["Title"] = "Manage Course";
+}
+
+<div class="container mt-4">
+    <h2>@(Model.Course.CourseCode == 0 ? "Create Course" : "Edit Course")</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <form method="post">
+                <input type="hidden" asp-for="Course.CourseCode" />
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Course.Title" class="control-label"></label>
+                    <input asp-for="Course.Title" class="form-control" />
+                    <span asp-validation-for="Course.Title" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Course.Category_ID" class="control-label">Category</label>
+                    <select asp-for="Course.Category_ID" asp-items="Model.Categories" class="form-control">
+                        <option value="">-- Select Category --</option>
+                    </select>
+                    <span asp-validation-for="Course.Category_ID" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Course.Description" class="control-label"></label>
+                    <textarea asp-for="Course.Description" class="form-control"></textarea>
+                    <span asp-validation-for="Course.Description" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Course.Duration" class="control-label"></label>
+                    <input asp-for="Course.Duration" class="form-control" />
+                    <span asp-validation-for="Course.Duration" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Course.Fees" class="control-label"></label>
+                    <input asp-for="Course.Fees" class="form-control" />
+                    <span asp-validation-for="Course.Fees" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                    <a asp-page="./Dashboard" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

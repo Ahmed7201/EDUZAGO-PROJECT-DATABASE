@@ -1,0 +1,75 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace.ManageUsersModel
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="container mt-4">
+    <h2>Manage Users</h2>
+
+    <h3>Instructors</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Approved</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Instructors)
+            {
+                <tr>
+                    <td>@item.InstructorID</td>
+                    <td>@item.Name</td>
+                    <td>@item.Email</td>
+                    <td>@(item.IsApproved ? "Yes" : "No")</td>
+                    <td>
+                        @if (!item.IsApproved)
+                        {
+                            <form method="post" asp-page-handler="Approve" asp-route-id="@item.InstructorID" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                        }
+                        <form method="post" asp-page-handler="DeleteInstructor" asp-route-id="@item.InstructorID"
+                            class="d-inline" onsubmit="return confirm('Are you sure?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <hr />
+
+    <h3>Students</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Students)
+            {
+                <tr>
+                    <td>@item.StudentID</td>
+                    <td>@item.Name</td>
+                    <td>@item.Email</td>
+                    <td>
+                        <form method="post" asp-page-handler="DeleteStudent" asp-route-id="@item.StudentID" class="d-inline"
+                            onsubmit="return confirm('Are you sure?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

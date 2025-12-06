@@ -1,0 +1,51 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.DashboardModel
+@{
+    ViewData["Title"] = "Instructor Dashboard";
+}
+
+<div class="container mt-4">
+    <h1>Welcome, Instructor @Model.Instructor?.Name</h1>
+
+    <div class="mb-4">
+        <a asp-page="./ManageCourse" class="btn btn-primary">Create New Course</a>
+    </div>
+
+    <h3>My Courses</h3>
+    @if (Model.MyCourses.Count == 0)
+    {
+        <p>You have not created any courses yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Title</th>
+                    <th>Duration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var course in Model.MyCourses)
+                {
+                    <tr>
+                        <td>@course.CourseCode</td>
+                        <td>@course.Title</td>
+                        <td>@course.Duration</td>
+                        <td>
+                            <a asp-page="./ManageCourse" asp-route-id="@course.CourseCode"
+                                class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-page="./ViewStudents" asp-route-courseId="@course.CourseCode"
+                                class="btn btn-sm btn-info">View Students</a>
+                            <a asp-page="./ManageResources" asp-route-courseId="@course.CourseCode" class="btn btn-sm btn-secondary">Resources</a>
+                            <a asp-page="./ManageSchedule" asp-route-courseId="@course.CourseCode" class="btn btn-sm btn-dark">Schedule</a>
+                            <a asp-page="./ManageGrades" asp-route-courseId="@course.CourseCode" class="btn btn-sm btn-success">Grades</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

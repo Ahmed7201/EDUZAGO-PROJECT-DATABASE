@@ -1,0 +1,53 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace.DashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h1>Admin Dashboard</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Students</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.StudentCount</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Instructors</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.InstructorCount</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Courses</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.CourseCount</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Pending Approvals</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.PendingInstructors</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <a asp-page="./ManageUsers" class="btn btn-lg btn-outline-primary w-100">Manage Users</a>
+        </div>
+        <div class="col-md-6 mb-3">
+            <a asp-page="./ManageCategories" class="btn btn-lg btn-outline-success w-100">Manage Categories</a>
+        </div>
+    </div>
+</div>

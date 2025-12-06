@@ -1,0 +1,80 @@
+@page "{courseId:int}"
+@model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ManageScheduleModel
+@{
+    ViewData["Title"] = "Manage Schedule";
+}
+
+<div class="container mt-4">
+    <h2>Manage Schedule for @Model.CourseTitle</h2>
+    <a asp-page="./Dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+    <div class="card mb-4">
+        <div class="card-header">Add Schedule Slot</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Add">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Day</label>
+                            <select name="Day" class="form-control">
+                                <option>Monday</option>
+                                <option>Tuesday</option>
+                                <option>Wednesday</option>
+                                <option>Thursday</option>
+                                <option>Friday</option>
+                                <option>Saturday</option>
+                                <option>Sunday</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Start Time</label>
+                            <input name="StartTime" type="time" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input name="EndTime" type="time" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Topic</label>
+                            <input name="Topic" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Add Slot</button>
+            </form>
+        </div>
+    </div>
+
+    <h3>Current Schedule</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Topic</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var slot in Model.Schedules)
+            {
+                <tr>
+                    <td>@slot.Day</td>
+                    <td>@slot.StartTime - @slot.EndTime</td>
+                    <td>@slot.Topic</td>
+                    <td>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@slot.ScheduleID" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

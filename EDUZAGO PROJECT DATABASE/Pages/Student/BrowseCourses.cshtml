@@ -1,0 +1,38 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace.BrowseCoursesModel
+@{
+    ViewData["Title"] = "Browse Courses";
+}
+
+<div class="container mt-4">
+    <h2>Browse Courses</h2>
+
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" asp-for="SearchTerm" class="form-control" placeholder="Search by title, topic, or instructor..." />
+            <button type="submit" class="btn btn-secondary">Search</button>
+        </div>
+    </form>
+
+    <div class="row">
+        @foreach (var course in Model.Courses)
+        {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@course.Title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@course.Category?.CategoryName</h6>
+                            <p class="card-text">@course.Description</p>
+                            <p class="card-text"><small class="text-muted">Instructor: @course.Instructor?.Name</small></p>
+                            <p class="card-text"><strong>Fees: $@course.Fees</strong></p>
+                        </div>
+                        <div class="card-footer">
+                            <form method="post" asp-page-handler="Enroll" asp-route-courseCode="@course.CourseCode">
+                                <button type="submit" class="btn btn-success w-100">Enroll</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        }
+    </div>
+</div>

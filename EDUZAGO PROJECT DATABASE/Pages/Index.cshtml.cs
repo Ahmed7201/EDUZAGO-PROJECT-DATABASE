@@ -5,16 +5,9 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
-
-        public IndexModel(ILogger<IndexModel> logger)
+        public IActionResult OnGet()
         {
-            _logger = logger;
-        }
-
-        public void OnGet()
-        {
-
+            return RedirectToPage("/Account/Login");
         }
     }
 }

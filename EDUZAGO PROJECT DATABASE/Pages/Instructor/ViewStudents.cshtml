@@ -1,0 +1,35 @@
+@page "{courseId:int}"
+@model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ViewStudentsModel
+@{
+    ViewData["Title"] = "Enrolled Students";
+}
+
+<div class="container mt-4">
+    <h2>Students Enrolled in @Model.Course?.Title</h2>
+    <a asp-page="./Dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+    @if (Model.EnrolledStudents.Count == 0)
+    {
+        <p>No students enrolled yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var student in Model.EnrolledStudents)
+                {
+                    <tr>
+                        <td>@student.Name</td>
+                        <td>@student.Email</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
