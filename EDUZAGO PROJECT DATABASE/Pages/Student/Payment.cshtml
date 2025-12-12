@@ -1,0 +1,33 @@
+@page
+@model EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace.PaymentModel
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <h1 class="text-success mb-4">✓ Payment Successful!</h1>
+                    <p class="lead mb-4">Your enrollment has been confirmed.</p>
+                    
+                    <div class="alert alert-success mb-4">
+                        <strong>Thank you!</strong> You can now access your course from the dashboard.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-page="./Dashboard" class="btn btn-primary btn-lg">Go to Dashboard</a>
+                        <a asp-page="./BrowseCourses" class="btn btn-secondary">Browse More Courses</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <small>A confirmation email has been sent to your registered email address.</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

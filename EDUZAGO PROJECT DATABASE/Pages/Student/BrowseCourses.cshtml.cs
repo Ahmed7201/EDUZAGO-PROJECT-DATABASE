@@ -40,11 +40,10 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             return Page();
         }
 
-        public IActionResult OnPostEnroll(int courseId)
+        public IActionResult OnPostEnroll(int courseCode)
         {
-            // Mock Enrollment
-            // Just redirect to Dashboard
-            return RedirectToPage("./Dashboard");
+            // Mock Enrollment - Redirect to Payment page
+            return RedirectToPage("./Payment");
         }
     }
 }
