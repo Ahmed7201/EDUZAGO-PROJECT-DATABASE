@@ -5,53 +5,90 @@
 }
 
 <div class="container mt-4">
-    <h2>Manage Categories</h2>
-
-    <div class="card mb-4">
-        <div class="card-header">Add New Category</div>
-        <div class="card-body">
-            <form method="post" asp-page-handler="Add">
-                <div asp-validation-summary="All" class="text-danger"></div>
-                <div class="form-group mb-3">
-                    <label asp-for="NewCategory.CategoryName" class="control-label"></label>
-                    <input asp-for="NewCategory.CategoryName" class="form-control" required />
-                    <span asp-validation-for="NewCategory.CategoryName" class="text-danger"></span>
-                </div>
-                <div class="form-group mb-3">
-                    <label asp-for="NewCategory.Description" class="control-label"></label>
-                    <input asp-for="NewCategory.Description" class="form-control" />
-                    <span asp-validation-for="NewCategory.Description" class="text-danger"></span>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Category</button>
-            </form>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Manage Categories</h2>
+            <p class="text-muted">Organize course catalog categories.</p>
         </div>
+        <a asp-page="./Dashboard" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to
+            Dashboard</a>
     </div>
 
-    <h3>Existing Categories</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Categories)
-            {
-                <tr>
-                    <td>@item.CategoryID</td>
-                    <td>@item.CategoryName</td>
-                    <td>@item.Description</td>
-                    <td>
-                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.CategoryID" class="d-inline"
-                            onsubmit="return confirm('Are you sure? Deleting a category usually deletes dependent courses too via Cascade.');">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="row">
+        <!-- ADD CATEGORY FORM -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fs-6 text-uppercase"><i class="bi bi-plus-circle me-2"></i>Add New Category</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="Add">
+                        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="NewCategory.CategoryName"
+                                class="form-label text-muted small fw-bold">CATEGORY NAME</label>
+                            <input asp-for="NewCategory.CategoryName" class="form-control"
+                                placeholder="e.g. Data Science" required />
+                            <span asp-validation-for="NewCategory.CategoryName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="NewCategory.Description"
+                                class="form-label text-muted small fw-bold">DESCRIPTION</label>
+                            <textarea asp-for="NewCategory.Description" class="form-control" rows="3"
+                                placeholder="Short description..."></textarea>
+                            <span asp-validation-for="NewCategory.Description" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                            <i class="bi bi-save me-2"></i>Add Category
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES LIST -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark"><i class="bi bi-tags me-2"></i>Existing Categories</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted text-uppercase small">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="border-top-0">
+                            @foreach (var item in Model.Categories)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">#@item.CategoryID</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@item.CategoryName</span>
+                                    </td>
+                                    <td class="text-muted small">@item.Description</td>
+                                    <td class="text-end pe-4">
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.CategoryID"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Are you sure? Deleting a category usually deletes dependent courses too via Cascade.');">
+                                            <button type="submit" class="btn btn-sm btn-danger shadow-sm">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

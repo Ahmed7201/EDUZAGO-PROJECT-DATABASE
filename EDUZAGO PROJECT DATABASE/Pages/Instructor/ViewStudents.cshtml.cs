@@ -13,7 +13,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         public EDUZAGO_PROJECT_DATABASE.Models.Course Course { get; set; }
         public List<EDUZAGO_PROJECT_DATABASE.Models.Student> EnrolledStudents { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Student>();
 
-        public IActionResult OnGet(int courseId)
+        public IActionResult OnGet(string courseId)
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Instructor") return RedirectToPage("/Account/Login");

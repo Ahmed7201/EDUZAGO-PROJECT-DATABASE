@@ -1,96 +1,197 @@
-@page "{courseId:int}"
+@page "{courseId}"
 @model EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace.CourseDetailsModel
 @{
     ViewData["Title"] = "Course Details";
+    var daysOfWeek = new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday };
+    var today = DateTime.Now.DayOfWeek;
 }
 
 <div class="container mt-4">
-    <h2>@Model.Course.Title</h2>
-    <p class="lead">@Model.Course.Description</p>
-    <p><strong>Instructor:</strong> @Model.Course.Instructor?.Name</p>
-    <hr />
-
-    <div class="row">
-        <div class="col-md-8">
-            <h3><i class="bi bi-folder"></i> Resources</h3>
-            @if (Model.Resources.Count > 0)
-            {
-                <ul class="list-group mb-4">
-                    @foreach (var res in Model.Resources)
-                    {
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            @res.ResourceName
-                            <a href="@res.Link" class="btn btn-sm btn-outline-primary" target="_blank">Download</a>
-                        </li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <p class="text-muted">No resources available.</p>
-            }
-
-            <h3><i class="bi bi-calendar"></i> Schedule</h3>
-            @if (Model.Schedules.Count > 0)
-            {
-                <table class="table table-bordered mb-4">
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Time</th>
-                            <th>Topic</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var sch in Model.Schedules)
-                        {
-                            <tr>
-                                <td>@sch.Day</td>
-                                <td>@sch.StartTime - @sch.EndTime</td>
-                                <td>@sch.Topic</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                <p class="text-muted">Schedule not posted.</p>
-            }
-
-            <h3><i class="bi bi-award"></i> My Grades</h3>
-            <div class="alert alert-info">
-                Current Grade: <strong>@Model.MyGrade</strong>
-            </div>
-
-            <hr />
-            <h3>Rate & Review</h3>
-            <form method="post" asp-page-handler="Review">
-                <div class="form-group mb-2">
-                    <label>Rating (1-5)</label>
-                    <select name="Rating" class="form-control" style="width: 100px;">
-                        <option>5</option>
-                        <option>4</option>
-                        <option>3</option>
-                        <option>2</option>
-                        <option>1</option>
-                    </select>
-                </div>
-                <div class="form-group mb-2">
-                    <label>Comment</label>
-                    <textarea name="Comment" class="form-control"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit Review</button>
-            </form>
-
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold">@Model.Course.Title</h1>
+            <p class="text-muted lead mb-0">@Model.Course.Description</p>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>Course Actions</h5>
-                    <a asp-page="./Dashboard" class="btn btn-secondary w-100">Back to Dashboard</a>
+        <div class="text-end">
+             <span class="badge bg-primary fs-6 mb-2">Instructor: @Model.Course.Instructor?.Name</span>
+        </div>
+    </div>
+    
+    <hr class="mb-5" />
+
+    <ul class="nav nav-tabs mb-4" id="courseTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab" aria-selected="true"><i class="bi bi-grid-3x3 me-2"></i>Weekly Schedule</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources" type="button" role="tab" aria-selected="false"><i class="bi bi-folder2-open me-2"></i>Resources</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="grades-tab" data-bs-toggle="tab" data-bs-target="#grades" type="button" role="tab" aria-selected="false"><i class="bi bi-award me-2"></i>Grades & Review</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- TAB 1: SCHEDULE GRID -->
+        <div class="tab-pane fade show active" id="schedule" role="tabpanel">
+            <div class="schedule-grid-container p-3 rounded shadow-sm bg-white border">
+                <div class="row g-0">
+                    @foreach (var day in daysOfWeek)
+                    {
+                        var isToday = day == today;
+                        var daySessions = Model.Schedules.Where(s => s.SessionTime.DayOfWeek == day).OrderBy(s => s.SessionTime).ToList();
+                        
+                        <div class="col day-column border-end @(isToday ? "today-column" : "")">
+                            <!-- Column Header -->
+                            <div class="day-header text-center py-2 border-bottom @(isToday ? "bg-primary text-white" : "bg-light text-muted")">
+                                <span class="d-block fw-bold text-uppercase small">@day</span>
+                                @if (isToday)
+                                {
+                                    <div class="badge bg-white text-primary mt-1" style="font-size: 0.6rem;">TODAY</div>
+                                }
+                            </div>
+                            
+                            <!-- Sessions Stack -->
+                            <div class="day-body p-2" style="min-height: 300px;">
+                                @if (isToday)
+                                {
+                                    <div class="current-time-line mb-3 text-center text-primary small fw-bold" style="border-bottom: 2px dashed #0d6efd;">
+                                        <span class="bg-white px-1">NOW</span>
+                                    </div>
+                                }
+
+                                @foreach (var slot in daySessions)
+                                {
+                                    <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-info bg-white">
+                                        <div class="badge bg-info bg-opacity-10 text-dark mb-1">
+                                            @slot.SessionTime.ToString("HH:mm")
+                                        </div>
+                                        <div class="small fw-bold text-dark lh-sm">@slot.SessionDetails</div>
+                                        <div class="extra-small text-muted mt-1">@slot.SessionTime.ToString("MMM dd")</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            @if (Model.Schedules.Count == 0)
+            {
+               <div class="alert alert-light text-center mt-3">No schedule posted yet.</div>
+            }
+        </div>
+
+        <!-- TAB 2: RESOURCES -->
+        <div class="tab-pane fade" id="resources" role="tabpanel">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                     @if (Model.Resources.Count > 0)
+                    {
+                        <div class="list-group shadow-sm border-0">
+                            @foreach (var res in Model.Resources)
+                            {
+                                <div class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center mb-2 rounded bg-light">
+                                    <span class="fw-bold"><i class="bi bi-file-earmark-text me-2 text-primary"></i>@res.ResourceType</span>
+                                    <a href="@res.URL" class="btn btn-sm btn-outline-primary rounded-pill px-3" target="_blank">
+                                        Download <i class="bi bi-download ms-1"></i>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No resources available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: GRADES & REVIEW -->
+        <div class="tab-pane fade" id="grades" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                     <div class="card shadow-sm border-0 bg-primary text-white text-center h-100">
+                        <div class="card-body py-5">
+                            <h5 class="card-title opacity-75 text-uppercase small">Your Current Grade</h5>
+                            <div class="display-1 fw-bold">@Model.MyGrade</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 bg-light">
+                        <div class="card-body p-4">
+                            <h4 class="card-title text-dark mb-3"><i class="bi bi-star me-2"></i>Rate & Review</h4>
+                            <form method="post" asp-page-handler="Review">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">RATING</label>
+                                    <select name="Rating" class="form-select">
+                                        <option value="5">⭐⭐⭐⭐⭐ Cannot be better</option>
+                                        <option value="4">⭐⭐⭐⭐ Also Good</option>
+                                        <option value="3">⭐⭐⭐ Nice</option>
+                                        <option value="2">⭐⭐ Bad</option>
+                                        <option value="1">⭐ Very Bad</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">COMMENT</label>
+                                    <textarea name="Comment" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="mt-5 mb-5 pb-5 d-grid">
+         <a asp-page="./Dashboard" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </a>
+    </div>
 </div>
+
+<style>
+    .schedule-grid-container {
+        overflow-x: auto;
+    }
+    .day-column {
+        min-width: 140px; 
+        background-color: #fcfcfc;
+    }
+    .today-column {
+        background-color: #f0f7ff !important;
+        border-left: 2px solid #0d6efd;
+        border-right: 2px solid #0d6efd !important;
+    }
+    .session-card {
+        transition: transform 0.1s;
+    }
+    .session-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 .25rem .5rem rgba(0,0,0,.15) !important;
+    }
+    .extra-small {
+        font-size: 0.75rem;
+    }
+    /* Tab Styling */
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding-bottom: 12px;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 3px solid #0d6efd;
+        background: none;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent transparent #e9ecef;
+        isolation: isolate;
+    }
+</style>

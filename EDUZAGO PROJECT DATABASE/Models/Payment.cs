@@ -6,7 +6,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
     public class Payment
     {
         [Key]
-        public int PaymentCode { get; set; }
+        public string PaymentCode { get; set; } = string.Empty;
 
         public DateTime PaymentDate { get; set; }
 
@@ -19,7 +19,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         [ForeignKey("Student_ID")]
         public Student? Student { get; set; }
 
-        public int Course_Code { get; set; }
+        public string Course_Code { get; set; } = string.Empty;
         [ForeignKey("Course_Code")]
         public Course? Course { get; set; }
     }

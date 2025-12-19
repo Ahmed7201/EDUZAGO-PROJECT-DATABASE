@@ -7,15 +7,15 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
     public class ManageResourcesModel : PageModel
     {
         public string CourseTitle { get; set; } = "Mock Course";
-        public List<MockResource> Resources { get; set; } = new List<MockResource>();
+        public List<EDUZAGO_PROJECT_DATABASE.Models.Resource> Resources { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Resource>();
 
-        public void OnGet(int courseId)
+        public void OnGet(string courseId)
         {
             CourseTitle = $"Mock Course {courseId}";
-            Resources = new List<MockResource>
+            Resources = new List<EDUZAGO_PROJECT_DATABASE.Models.Resource>
             {
-                new MockResource { ResourceID = 1, ResourceName = "Week 1 Slides", Link = "slides.pdf" },
-                new MockResource { ResourceID = 2, ResourceName = "Assignment 1 Spec", Link = "assign1.pdf" }
+                new EDUZAGO_PROJECT_DATABASE.Models.Resource { ResourceID = 1, ResourceType = "Week 1 Slides", URL = "slides.pdf" },
+                new EDUZAGO_PROJECT_DATABASE.Models.Resource { ResourceID = 2, ResourceType = "Assignment 1 Spec", URL = "assign1.pdf" }
             };
         }
 
@@ -29,13 +29,6 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         {
             // Mock Delete
             return RedirectToPage();
-        }
-
-        public class MockResource
-        {
-            public int ResourceID { get; set; }
-            public string ResourceName { get; set; }
-            public string Link { get; set; }
         }
     }
 }

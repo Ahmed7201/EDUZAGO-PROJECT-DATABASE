@@ -8,15 +8,15 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         public string CourseTitle { get; set; } = "Mock Course";
 
         [BindProperty]
-        public List<MockStudentGrade> StudentGrades { get; set; } = new List<MockStudentGrade>();
+        public List<StudentGradeViewModel> StudentGrades { get; set; } = new List<StudentGradeViewModel>();
 
-        public void OnGet(int courseId)
+        public void OnGet(string courseId)
         {
             CourseTitle = $"Mock Course {courseId}";
-            StudentGrades = new List<MockStudentGrade>
+            StudentGrades = new List<StudentGradeViewModel>
             {
-                new MockStudentGrade { StudentID = 1, StudentName = "Alice Student", Email="alice@t.com", Grade = "A" },
-                new MockStudentGrade { StudentID = 2, StudentName = "Bob Learner", Email="bob@t.com", Grade = "B+" }
+                new StudentGradeViewModel { StudentID = 1, StudentName = "Alice Student", Email="alice@t.com", CompletionStatus = "Completed", Progress = "100%" },
+                new StudentGradeViewModel { StudentID = 2, StudentName = "Bob Learner", Email="bob@t.com", CompletionStatus = "In Progress", Progress = "60%" }
             };
         }
 
@@ -26,12 +26,14 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             return RedirectToPage();
         }
 
-        public class MockStudentGrade
+        public class StudentGradeViewModel
         {
             public int StudentID { get; set; }
             public string StudentName { get; set; } = "";
             public string Email { get; set; } = "";
-            public string Grade { get; set; } = "";
+            public string CompletionStatus { get; set; } = "In Progress";
+            public string Progress { get; set; } = "0%";
+            public string CertificateDetails { get; set; } = "";
         }
     }
 }

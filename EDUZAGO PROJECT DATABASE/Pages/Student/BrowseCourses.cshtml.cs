@@ -23,9 +23,9 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             // Mock Data
             var allCourses = new List<EDUZAGO_PROJECT_DATABASE.Models.Course>
              {
-                 new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = 1, Title = "Machine Learning A-Z", Description = "Learn ML", Duration = "10 Weeks", Fees = 99.99m },
-                 new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = 2, Title = "Web Development Bootcamp", Description = "Full Stack Dev", Duration = "12 Weeks", Fees = 149.99m },
-                 new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = 3, Title = "Data Science with Python", Description = "Data Analysis", Duration = "8 Weeks", Fees = 89.99m }
+                 new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "ML-1", Title = "Machine Learning A-Z", Description = "Learn ML", Duration = "10 Weeks", Fees = 99.99m },
+                 new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "WD-2", Title = "Web Development Bootcamp", Description = "Full Stack Dev", Duration = "12 Weeks", Fees = 149.99m },
+                 new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "DS-3", Title = "Data Science with Python", Description = "Data Analysis", Duration = "8 Weeks", Fees = 89.99m }
              };
 
             if (!string.IsNullOrEmpty(SearchTerm))
@@ -40,7 +40,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             return Page();
         }
 
-        public IActionResult OnPostEnroll(int courseCode)
+        public IActionResult OnPostEnroll(string courseCode)
         {
             // Mock Enrollment - Redirect to Payment page
             return RedirectToPage("./Payment");

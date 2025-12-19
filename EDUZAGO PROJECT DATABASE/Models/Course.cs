@@ -6,7 +6,8 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
     public class Course
     {
         [Key]
-        public int CourseCode { get; set; } // Using int as ID based on standard EF conventions, though "Code" implies string typically. User asked for "Course Code". I'll use int for PK simplification or string if they insisted, but "Course Code" usually implies like "CS101". Given database list says "Course Code" is stored. I will make it the Key. 
+        [DatabaseGenerated(DatabaseGeneratedOption.None)] // String keys are usually not auto-generated
+        public string CourseCode { get; set; } = string.Empty;
 
         [Required]
         public string Title { get; set; } = string.Empty;

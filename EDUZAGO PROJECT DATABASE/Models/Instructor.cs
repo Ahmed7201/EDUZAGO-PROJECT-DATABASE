@@ -2,25 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EDUZAGO_PROJECT_DATABASE.Models
 {
-    public class Instructor
+    public class Instructor : User
     {
-        public int InstructorID { get; set; }
-
-        [Required]
-        public string Name { get; set; } = string.Empty;
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
         public string Expertise { get; set; } = string.Empty;
 
         public string Bio { get; set; } = string.Empty;
 
+        // Keeping IsApproved as an inferred requirement for system management, though not explicitly in text schema
         public bool IsApproved { get; set; } = false;
     }
 }

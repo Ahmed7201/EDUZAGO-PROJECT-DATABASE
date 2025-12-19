@@ -1,4 +1,4 @@
-@page "{courseId:int}"
+@page "{courseId}"
 @model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ManageGradesModel
 @{
     ViewData["Title"] = "Manage Grades";
@@ -14,7 +14,8 @@
                 <tr>
                     <th>Student Name</th>
                     <th>Email</th>
-                    <th>Grade</th>
+                    <th>Completion Status</th>
+                    <th>Progress</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,8 +31,13 @@
                         </td>
                         <td>@Model.StudentGrades[i].Email</td>
                         <td>
-                            <input name="StudentGrades[@i].Grade" value="@Model.StudentGrades[i].Grade" class="form-control"
-                                style="width: 100px;" />
+                            <select name="StudentGrades[@i].CompletionStatus" class="form-control">
+                                <option value="In Progress" selected="@(Model.StudentGrades[i].CompletionStatus == "In Progress")">In Progress</option>
+                                <option value="Completed" selected="@(Model.StudentGrades[i].CompletionStatus == "Completed")">Completed</option>
+                            </select>
+                        </td>
+                        <td>
+                             <input name="StudentGrades[@i].Progress" value="@Model.StudentGrades[i].Progress" class="form-control" placeholder="e.g. 85%" />
                         </td>
                     </tr>
                 }

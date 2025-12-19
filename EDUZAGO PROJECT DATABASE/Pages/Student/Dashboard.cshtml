@@ -2,46 +2,141 @@
 @model EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace.DashboardModel
 @{
     ViewData["Title"] = "Student Dashboard";
+    var daysOfWeek = new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
+DayOfWeek.Friday, DayOfWeek.Saturday };
+    var today = DateTime.Now.DayOfWeek;
 }
 
 <div class="container mt-4">
-    <h1>Welcome, @Model.Student?.Name</h1>
-    <p>Email: @Model.Student?.Email</p>
-
-    <div class="mb-4">
-        <a asp-page="/Student/BrowseCourses" class="btn btn-primary">Browse & Enroll in Courses</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Welcome, @Model.Student?.Name</h1>
+        <a asp-page="./BrowseCourses" class="btn btn-success btn-lg shadow-sm"><i class="bi bi-search me-2"></i>Browse
+            New Courses</a>
     </div>
 
-    <h3>Your Enrolled Courses</h3>
+    <!-- WEEKLY SCHEDULE GRID -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white py-3">
+            <h4 class="mb-0 text-primary"><i class="bi bi-calendar-week me-2"></i>My Weekly Schedule</h4>
+        </div>
+        <div class="card-body p-0">
+            <div class="schedule-grid-container">
+                <div class="row g-0">
+                    @foreach (var day in daysOfWeek)
+                    {
+                        var isToday = day == today;
+                        var daySessions = Model.WeeklySchedule.Where(s => s.SessionTime.DayOfWeek == day).OrderBy(s =>
+                        s.SessionTime).ToList();
+
+                        <div class="col day-column border-end @(isToday ? "today-column" : "")">
+                            <!-- Column Header -->
+                            <div
+                                class="day-header text-center py-2 border-bottom @(isToday ? "bg-primary text-white" : "bg-light text-muted")">
+                                <span class="d-block fw-bold text-uppercase small">@day</span>
+                                @if (isToday)
+                                {
+                                    <div class="badge bg-white text-primary mt-1" style="font-size: 0.7rem;">TODAY</div>
+                                }
+                            </div>
+
+                            <!-- Sessions Stack -->
+                            <div class="day-body p-2" style="min-height: 250px;">
+                                @if (isToday)
+                                {
+                                    <!-- Visual "NOW" Line (Approximation) -->
+                                    <div class="current-time-line mb-2 text-center text-primary small fw-bold"
+                                        style="border-bottom: 2px dashed #0d6efd;">
+                                        <span class="bg-white px-1">NOW</span>
+                                    </div>
+                                }
+
+                                @foreach (var slot in daySessions)
+                                {
+                                    <a asp-page="./CourseDetails" asp-route-courseId="@slot.CourseCode"
+                                        class="text-decoration-none">
+                                        <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-info bg-white cursor-pointer"
+                                            title="Go to Course Details">
+                                            <div class="badge bg-info bg-opacity-10 text-dark mb-1">
+                                                @slot.SessionTime.ToString("HH:mm")
+                                            </div>
+                                            <div class="fw-bold text-dark text-truncate small">@slot.CourseCode</div>
+                                            <div class="small text-muted lh-sm text-truncate">@slot.SessionDetails</div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>My Enrolled Courses</h3>
     @if (Model.EnrolledCourses.Count == 0)
     {
-        <p>You are not enrolled in any courses yet.</p>
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-book display-4 d-block mb-3"></i>
+            <h4>You are not enrolled in any courses yet.</h4>
+            <p class="mb-4">Explore our catalog and find the perfect course for you!</p>
+            <a asp-page="./BrowseCourses" class="btn btn-primary">Browse Courses</a>
+        </div>
     }
     else
     {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Course Code</th>
-                    <th>Title</th>
-                    <th>Instructor</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var course in Model.EnrolledCourses)
-                {
-                    <tr>
-                        <td>@course.CourseCode</td>
-                        <td>@course.Title</td>
-                        <td>@course.Instructor?.Name</td>
-                        <td>
+        <div class="row">
+            @foreach (var course in Model.EnrolledCourses)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 course-card">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">@course.Title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-hash"></i> @course.CourseCode</h6>
+                            <p class="card-text text-muted small">@course.Description</p>
+                        </div>
+                        <div class="card-footer bg-white border-top-0 pb-3">
                             <a asp-page="./CourseDetails" asp-route-courseId="@course.CourseCode"
-                                class="btn btn-sm btn-info">View Details</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                                class="btn btn-outline-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
     }
 </div>
+
+<style>
+    .schedule-grid-container {
+        overflow-x: auto;
+    }
+
+    .day-column {
+        min-width: 140px;
+        background-color: #fcfcfc;
+    }
+
+    .today-column {
+        background-color: #f0f7ff !important;
+        /* Light blue tint for today */
+        border-left: 2px solid #0d6efd;
+        border-right: 2px solid #0d6efd !important;
+    }
+
+    .session-card {
+        transition: transform 0.1s;
+    }
+
+    .session-card:hover {
+        transform: scale(1.02);
+        background-color: #e3f2fd !important;
+    }
+
+    .course-card {
+        transition: transform 0.2s;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

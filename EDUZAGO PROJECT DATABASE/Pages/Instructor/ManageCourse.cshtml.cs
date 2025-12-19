@@ -16,7 +16,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 
         public List<SelectListItem> Categories { get; set; } = new List<SelectListItem>();
 
-        public IActionResult OnGet(int? id)
+        public IActionResult OnGet(string? id)
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Instructor") return RedirectToPage("/Account/Login");
@@ -27,12 +27,12 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
                 new SelectListItem { Value = "2", Text = "Business" }
             };
 
-            if (id.HasValue)
+            if (!string.IsNullOrEmpty(id))
             {
                 // Mock Existing Course
                 Course = new Course
                 {
-                    CourseCode = id.Value,
+                    CourseCode = id,
                     Title = "Existing Mock Course",
                     Description = "This is a mock description",
                     Duration = "5 Weeks",
@@ -45,8 +45,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 
         public IActionResult OnPost()
         {
-            // Mock Save
-            // Just redirect
+
             return RedirectToPage("./Dashboard");
         }
     }

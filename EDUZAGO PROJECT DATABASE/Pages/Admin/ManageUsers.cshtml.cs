@@ -21,13 +21,13 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             // Mock Users
             Instructors = new List<EDUZAGO_PROJECT_DATABASE.Models.Instructor>
              {
-                 new EDUZAGO_PROJECT_DATABASE.Models.Instructor { InstructorID = 1, Name = "Dr. Strange", Email = "strange@edu.com", IsApproved = true },
-                 new EDUZAGO_PROJECT_DATABASE.Models.Instructor { InstructorID = 2, Name = "Pending Prof", Email = "pending@edu.com", IsApproved = false }
+                 new EDUZAGO_PROJECT_DATABASE.Models.Instructor { USER_ID = 1, Name = "Dr. Strange", Email = "strange@edu.com", IsApproved = true },
+                 new EDUZAGO_PROJECT_DATABASE.Models.Instructor { USER_ID = 2, Name = "Pending Prof", Email = "pending@edu.com", IsApproved = false }
              };
 
             Students = new List<EDUZAGO_PROJECT_DATABASE.Models.Student>
              {
-                 new EDUZAGO_PROJECT_DATABASE.Models.Student { StudentID = 1, Name = "Peter Parker", Email = "spidey@edu.com" }
+                 new EDUZAGO_PROJECT_DATABASE.Models.Student { USER_ID = 1, Name = "Peter Parker", Email = "spidey@edu.com" }
              };
 
             return Page();

@@ -7,11 +7,11 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
     public class CourseDetailsModel : PageModel
     {
         public EDUZAGO_PROJECT_DATABASE.Models.Course Course { get; set; } = new EDUZAGO_PROJECT_DATABASE.Models.Course();
-        public List<MockResource> Resources { get; set; } = new List<MockResource>();
-        public List<MockSchedule> Schedules { get; set; } = new List<MockSchedule>();
+        public List<EDUZAGO_PROJECT_DATABASE.Models.Resource> Resources { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Resource>();
+        public List<EDUZAGO_PROJECT_DATABASE.Models.Schedule> Schedules { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Schedule>();
         public string MyGrade { get; set; } = "A-";
 
-        public void OnGet(int courseId)
+        public void OnGet(string courseId)
         {
             // Mock Data
             Course = new EDUZAGO_PROJECT_DATABASE.Models.Course
@@ -22,16 +22,16 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
                 Instructor = new EDUZAGO_PROJECT_DATABASE.Models.Instructor { Name = "Dr. Mock" }
             };
 
-            Resources = new List<MockResource>
+            Resources = new List<EDUZAGO_PROJECT_DATABASE.Models.Resource>
              {
-                 new MockResource { ResourceName = "Lecture 1 Notes", Link = "#" },
-                 new MockResource { ResourceName = "Lab Helper", Link = "#" }
+                 new EDUZAGO_PROJECT_DATABASE.Models.Resource { ResourceType = "PDF Notes", URL = "#" },
+                 new EDUZAGO_PROJECT_DATABASE.Models.Resource { ResourceType = "Video Link", URL = "#" }
              };
 
-            Schedules = new List<MockSchedule>
+            Schedules = new List<EDUZAGO_PROJECT_DATABASE.Models.Schedule>
              {
-                 new MockSchedule { Day = "Monday", StartTime = "10:00 AM", EndTime = "12:00 PM", Topic = "Introduction" },
-                 new MockSchedule { Day = "Wednesday", StartTime = "10:00 AM", EndTime = "12:00 PM", Topic = "Advanced Topics" }
+                 new EDUZAGO_PROJECT_DATABASE.Models.Schedule { SessionTime = DateTime.Now.AddDays(1), SessionDetails = "Introduction" },
+                 new EDUZAGO_PROJECT_DATABASE.Models.Schedule { SessionTime = DateTime.Now.AddDays(3), SessionDetails = "Advanced Topics" }
              };
         }
 
@@ -40,8 +40,5 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             // Mock Save Review
             return RedirectToPage(new { courseId = Course.CourseCode });
         }
-
-        public class MockResource { public string ResourceName { get; set; } public string Link { get; set; } }
-        public class MockSchedule { public string Day { get; set; } public string StartTime { get; set; } public string EndTime { get; set; } public string Topic { get; set; } }
     }
 }

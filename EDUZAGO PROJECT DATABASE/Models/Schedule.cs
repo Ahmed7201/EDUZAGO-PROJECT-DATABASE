@@ -12,7 +12,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         public string SessionDetails { get; set; } = string.Empty;
 
         // Foreign Keys
-        public int Course_Code { get; set; }
+        public string Course_Code { get; set; } = string.Empty;
         [ForeignKey("Course_Code")]
         public Course? Course { get; set; }
 

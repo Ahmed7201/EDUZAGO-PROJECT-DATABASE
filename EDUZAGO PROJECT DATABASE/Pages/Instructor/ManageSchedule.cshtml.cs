@@ -6,15 +6,15 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
     public class ManageScheduleModel : PageModel
     {
         public string CourseTitle { get; set; } = "Mock Course";
-        public List<MockScheduleItem> Schedules { get; set; } = new List<MockScheduleItem>();
+        public List<EDUZAGO_PROJECT_DATABASE.Models.Schedule> Schedules { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Schedule>();
 
-        public void OnGet(int courseId)
+        public void OnGet(string courseId)
         {
             CourseTitle = $"Mock Course {courseId}";
-            Schedules = new List<MockScheduleItem>
+            Schedules = new List<EDUZAGO_PROJECT_DATABASE.Models.Schedule>
             {
-                new MockScheduleItem { ScheduleID = 1, Day = "Monday", StartTime = "10:00", EndTime = "12:00", Topic = "Intro to C#" },
-                new MockScheduleItem { ScheduleID = 2, Day = "Wednesday", StartTime = "14:00", EndTime = "16:00", Topic = "OOP Concepts" }
+                new EDUZAGO_PROJECT_DATABASE.Models.Schedule { ScheduleID = 1, SessionTime = DateTime.Now.AddDays(2).AddHours(14), SessionDetails = "Intro to C#" },
+                new EDUZAGO_PROJECT_DATABASE.Models.Schedule { ScheduleID = 2, SessionTime = DateTime.Now.AddDays(5).AddHours(10),  SessionDetails = "OOP Concepts" }
             };
         }
 
@@ -28,15 +28,6 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         {
             // Mock Delete
             return RedirectToPage();
-        }
-
-        public class MockScheduleItem
-        {
-            public int ScheduleID { get; set; }
-            public string Day { get; set; } = "";
-            public string StartTime { get; set; } = "";
-            public string EndTime { get; set; } = "";
-            public string Topic { get; set; } = "";
         }
     }
 }

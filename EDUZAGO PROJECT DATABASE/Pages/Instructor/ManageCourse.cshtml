@@ -1,11 +1,11 @@
-@page "{id:int?}"
+@page "{id?}"
 @model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ManageCourseModel
 @{
     ViewData["Title"] = "Manage Course";
 }
 
 <div class="container mt-4">
-    <h2>@(Model.Course.CourseCode == 0 ? "Create Course" : "Edit Course")</h2>
+    <h2>@(string.IsNullOrEmpty(Model.Course.CourseCode) ? "Create Course" : "Edit Course")</h2>
 
     <div class="row">
         <div class="col-md-6">

@@ -1,0 +1,68 @@
+IS_A (Inheritance/Subtype)
+Entities: USER to ADMIN
+Cardinality: 1:1 (USER is supertype, ADMIN is subtype; one USER corresponds to one ADMIN role).
+Notes: Specialization (ADMIN extends USER). Labeled "1 IS_A 1". Admin must be a user (total participation; double line implied for subtype dependency).
+IS_A (Inheritance/Subtype)
+Entities: USER to STUDENT
+Cardinality: 1:1 (USER is supertype, STUDENT is subtype).
+Notes: Specialization (STUDENT extends USER). Labeled "1 IS_A 1". Student must be a user (total participation; double line implied for subtype dependency).
+IS_A (Inheritance/Subtype)
+Entities: USER to INSTRUCTOR
+Cardinality: 1:1 (USER is supertype, INSTRUCTOR is subtype).
+Notes: Specialization (INSTRUCTOR extends USER). Labeled "1 IS_A 1". Instructor must be a user (total participation; double line implied for subtype dependency).
+Manages
+Entities: ADMIN to CATEGORY
+Cardinality: M:N (Many ADMIN manages many CATEGORIES).
+Notes: Binary relationship. Labeled "1" on ADMIN side, "M" and "N" on CATEGORY side (M/N likely equivalent for "many"). Double lined from category as category must be managed by admin (total participation on CATEGORY side).
+Manages
+Entities: ADMIN to COURSE
+Cardinality: M:N (Many ADMIN manages many COURSES).
+Notes: Binary relationship. Labeled "1" on ADMIN side, "M" and "N" on COURSE side (M/N likely equivalent for "many"). Double lined from course as course must be managed by admin (total participation on COURSE side; same as category manages).
+BELONGS_TO
+Entities: COURSE to CATEGORY
+Cardinality: M:1 (Many COURSES belong to one CATEGORY).
+Notes: Binary relationship. Labeled "M" on COURSE side, "1" on CATEGORY side. Also here course must belong to category as it is doubled lined (total participation on COURSE side).
+Enrolls
+Entities: STUDENT to COURSE
+Cardinality: M:N (Many STUDENTS enroll in many COURSES).
+Notes: Associative relationship with attribute "Enrollment_date" (e.g., date of enrollment). Labeled "M" on STUDENT side, "N" on COURSE side. Implies a junction entity (Enrollment) in logical schema. Enrollment must involve student and course (total participation; double line implied for M:N).
+Teaches
+Entities: INSTRUCTOR to COURSE
+Cardinality: M:N (Many INSTRUCTORS teach many COURSES).
+Notes: Binary relationship. Labeled "M" on INSTRUCTOR side, "N" on COURSE side. Implies a junction entity (Teaches) in logical schema. And course must be teached by instructor as it is double lined (total participation on COURSE side).
+PAY
+Entities: STUDENT to PAYMENT
+Cardinality: 1:N (One STUDENT makes many PAYMENTS).
+Notes: Binary relationship. Labeled "1" on STUDENT side, "N" on PAYMENT side. PAYMENT is also implicitly connected to COURSE (via unlabeled line, likely 1:N from COURSE to PAYMENT). And double lined from the payment payment must have student (total participation on PAYMENT side).
+WRITES
+Entities: STUDENT to REVIEW
+Cardinality: 1:N (One STUDENT writes many REVIEWS).
+Notes: Binary relationship. Labeled "1" on STUDENT side, "N" on REVIEW side. REVIEW is also connected to COURSE via "Has" (see below). Review must be written by student (total participation on REVIEW side).
+Has (Inferred for REVIEW)
+Entities: COURSE to REVIEW
+Cardinality: 1:N (One COURSE has many REVIEWS).
+Notes: Binary relationship (unlabeled diamond but connected). Labeled "1" on COURSE side, "N" on REVIEW side. And double lined from review side as review must be for existing course (total participation on REVIEW side).
+EARNED
+Entities: STUDENT to GRADE
+Cardinality: 1:N (One STUDENT earns many GRADES).
+Notes: Part of ternary-like connection. Labeled "1" on STUDENT side, "N" on GRADE side. GRADE also connected to COURSE and INSTRUCTOR. And grade must be earned by students (total participation on GRADE side).
+(Unlabeled, but connected to GRADE - Inferred as "For" or "In" or "Has")
+Entities: COURSE to GRADE
+Cardinality: 1:N (One COURSE has many GRADES).
+Notes: Binary within ternary. Labeled "1" on COURSE side, "N" on GRADE side. Grade must be for an existing course (total participation on GRADE side; double line implied).
+Record And update
+Entities: INSTRUCTOR to GRADE
+Cardinality: M:N (Many INSTRUCTORS record/update many GRADES).
+Notes: Binary relationship. Labeled "M" on INSTRUCTOR side, "N" on GRADE side. Part of GRADE's ternary connection (STUDENT-COURSE-INSTRUCTOR). Grade must be recorded and updated by instructor double line (total participation on GRADE side).
+HAS_SCHEDULE
+Entities: COURSE to SCHEDULE
+Cardinality: 1:N (One COURSE has many SCHEDULES).
+Notes: Binary relationship. Labeled "1" on COURSE side, "N" on SCHEDULE side. Double line from schedule as schedule must has course (total participation on SCHEDULE side).
+HAS
+Entities: COURSE to RESOURCE
+Cardinality: 1:N (One COURSE has many RESOURCES).
+Notes: Binary relationship. Labeled "1" on COURSE side, "N" on RESOURCE side. Resources must has course double line (total participation on RESOURCE side).
+Manages (Bottom one, inferred for RESOURCE)
+Entities: INSTRUCTOR to RESOURCE
+Cardinality: M:N (Many INSTRUCTORS manage many RESOURCES).
+Notes: Binary relationship (separate Manages diamond at bottom). Labeled "M" on INSTRUCTOR side, "N" on RESOURCE side. Resource must be managed by instructor double line also (total participation on RESOURCE side).

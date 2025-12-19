@@ -8,13 +8,13 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         public int ResourceID { get; set; }
 
         [Required]
-        public string ResourceType { get; set; } = string.Empty; // e.g., PDF, Video
+        public string ResourceType { get; set; } = string.Empty;
 
         [Required]
         public string URL { get; set; } = string.Empty;
 
         // Foreign Keys
-        public int Course_Code { get; set; }
+        public string Course_Code { get; set; } = string.Empty;
         [ForeignKey("Course_Code")]
         public Course? Course { get; set; }
 

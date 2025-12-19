@@ -1,80 +1,122 @@
-@page "{courseId:int}"
+@page "{courseId}"
 @model EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace.ManageScheduleModel
 @{
     ViewData["Title"] = "Manage Schedule";
+    var daysOfWeek = new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday };
+    var today = DateTime.Now.DayOfWeek;
 }
 
-<div class="container mt-4">
-    <h2>Manage Schedule for @Model.CourseTitle</h2>
-    <a asp-page="./Dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Manage Schedule</h2>
+            <p class="text-muted mb-0">For course: <strong>@Model.CourseTitle</strong></p>
+        </div>
+        <a asp-page="./Dashboard" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
 
-    <div class="card mb-4">
-        <div class="card-header">Add Schedule Slot</div>
-        <div class="card-body">
-            <form method="post" asp-page-handler="Add">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Day</label>
-                            <select name="Day" class="form-control">
-                                <option>Monday</option>
-                                <option>Tuesday</option>
-                                <option>Wednesday</option>
-                                <option>Thursday</option>
-                                <option>Friday</option>
-                                <option>Saturday</option>
-                                <option>Sunday</option>
-                            </select>
+    <!-- Add Slot (Collapsible) -->
+    <div class="mb-4">
+        <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addSlotCollapse">
+            <i class="bi bi-plus-lg me-2"></i>Add Session
+        </button>
+        <div class="collapse mt-3" id="addSlotCollapse">
+            <div class="card border-0 shadow-sm bg-light" style="max-width: 600px;">
+                <div class="card-body p-4">
+                    <form method="post" asp-page-handler="Add">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">SESSION TIME</label>
+                            <input name="SessionTime" type="datetime-local" class="form-control" required />
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Start Time</label>
-                            <input name="StartTime" type="time" class="form-control" required />
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">TOPIC</label>
+                            <input name="SessionDetails" class="form-control" placeholder="e.g. Intro" required />
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>End Time</label>
-                            <input name="EndTime" type="time" class="form-control" required />
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Topic</label>
-                            <input name="Topic" class="form-control" required />
-                        </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Session</button>
+                    </form>
                 </div>
-                <button type="submit" class="btn btn-success mt-3">Add Slot</button>
-            </form>
+            </div>
         </div>
     </div>
 
-    <h3>Current Schedule</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Day</th>
-                <th>Time</th>
-                <th>Topic</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var slot in Model.Schedules)
-            {
-                <tr>
-                    <td>@slot.Day</td>
-                    <td>@slot.StartTime - @slot.EndTime</td>
-                    <td>@slot.Topic</td>
-                    <td>
-                        <form method="post" asp-page-handler="Delete" asp-route-id="@slot.ScheduleID" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <!-- WEEKLY GRID VIEW -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="schedule-grid-container rounded">
+                <div class="row g-0">
+                    @foreach (var day in daysOfWeek)
+                    {
+                        var isToday = day == today;
+                        var daySessions = Model.Schedules.Where(s => s.SessionTime.DayOfWeek == day).OrderBy(s => s.SessionTime).ToList();
+                        
+                        <div class="col day-column border-end @(isToday ? "today-column" : "")">
+                            <!-- Column Header -->
+                            <div class="day-header text-center py-2 border-bottom @(isToday ? "bg-danger text-white" : "bg-light text-muted")">
+                                <span class="d-block fw-bold text-uppercase small">@day</span>
+                                @if (isToday) 
+                                { 
+                                    <div class="badge bg-white text-danger mt-1" style="font-size: 0.6rem;">TODAY</div> 
+                                }
+                            </div>
+                            
+                            <!-- Sessions Stack -->
+                            <div class="day-body p-2" style="min-height: 400px;">
+                                @if (isToday)
+                                {
+                                    <div class="current-time-line mb-3 text-center text-danger small fw-bold" style="border-bottom: 2px dashed red;">
+                                        <span class="bg-white px-1">NOW</span>
+                                    </div>
+                                }
+
+                                @foreach (var slot in daySessions)
+                                {
+                                    <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-primary bg-white">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary mb-1">
+                                                @slot.SessionTime.ToString("HH:mm")
+                                            </span>
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@slot.ScheduleID" class="d-inline">
+                                                <button type="submit" class="btn btn-link text-danger p-0 ms-1" style="font-size: 0.8rem;" onclick="return confirm('Delete?')">
+                                                    <i class="bi bi-x-circle-fill"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="small fw-bold text-dark lh-sm">@slot.SessionDetails</div>
+                                        <div class="extra-small text-muted mt-1">@slot.SessionTime.ToString("MMM dd")</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .schedule-grid-container {
+        overflow-x: auto;
+    }
+    .day-column {
+        min-width: 140px; 
+        background-color: #fcfcfc;
+    }
+    .today-column {
+        background-color: #fff0f0 !important;
+        border-left: 2px solid #dc3545;
+        border-right: 2px solid #dc3545 !important;
+    }
+    .session-card {
+        transition: transform 0.1s;
+    }
+    .session-card:hover {
+        transform: scale(1.02);
+        background-color: #fff;
+    }
+    .extra-small {
+        font-size: 0.75rem;
+    }
+</style>
