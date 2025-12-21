@@ -16,7 +16,7 @@ public class DB
     public int Get_StudentCount()
     {
         int count = 0;
-        string query = "SELECT COUNT(*) FROM Students";
+        string query = "SELECT COUNT(*) FROM Student";
         SqlCommand cmd = new SqlCommand(query, con);
         try
         {
@@ -39,7 +39,7 @@ public class DB
     public int Get_InstructorCount()
     {
         int count = 0;
-        string query = "SELECT COUNT(*) FROM Instructors";
+        string query = "SELECT COUNT(*) FROM Instructor";
         SqlCommand cmd = new SqlCommand(query, con);
         try
         {
@@ -80,7 +80,7 @@ public class DB
     public DataTable GetAllInstructors()
     {
         DataTable dt = new DataTable();
-        string query = "Select * From Instructor";
+        string query = "Select * From Instructor ,USER WHERE Instructor_ID=User-ID";
         SqlCommand cmd = new SqlCommand(query, con);
 
         try
@@ -102,7 +102,7 @@ public class DB
     public DataTable GetAllStudents()
     {
         DataTable dt = new DataTable();
-        string query = "Select * From Students";
+        string query = "Select * From Students,User WHERE Student_ID=User_ID";
         SqlCommand cmd = new SqlCommand(query, con);
 
         try
