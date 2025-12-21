@@ -86,7 +86,7 @@
             }
             catch(Exception ex)
             {
-                Console.Write(ex.Message);
+                Console.WriteLine(ex.Message);
             }
             finally 
             {
@@ -137,6 +137,32 @@
                 con.Close();
             }
             return dt;
+        }
+        public void AddCategory(Category category)
+        {
+            string query = "Insert Into Category ( CategoryID, CategoryName, Description, Admin_ID) Values (@CategoryID, @CategoryName, @ Description, @Admin_ID)";
+            SqlCommand cmd = new SqlCommand(query, con);
+
+            cmd.Parameters.AddWithValue("@CategoryID", category.CategoryID);
+            cmd.Parameters.AddWithValue("@CategoryName", category.CategoryName);
+            cmd.Parameters.AddWithValue("@Description", category.Description);
+            cmd.Parameters.AddWithValue("@Admin_ID", category.Admin_ID);
+            try
+            {
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+
+
         }
 
     }
