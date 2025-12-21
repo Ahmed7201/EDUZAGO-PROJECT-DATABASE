@@ -94,5 +94,50 @@
             }
             return dt;
         }
+        public DataTable GetAllCourses()
+        {
+            DataTable dt = new DataTable();
+            string query = "SELECT * FROM Course";
+            SqlCommand cmd = new SqlCommand(query, con);
+            try
+            {
+                con.Open();
+                dt.Load(cmd.ExecuteReader());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+            return dt;
+        }
+        public DataTable SearchCourses(string searchText)
+        {
+            DataTable dt = new DataTable();
+
+            string query = @"SELECT * FROM COURSE
+                     WHERE Title LIKE @search" ;
+
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@search", "%" + searchText + "%");
+            try
+            {
+                con.Open();
+                dt.Load(cmd.ExecuteReader());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+            return dt;
+        }
+
     }
 }
