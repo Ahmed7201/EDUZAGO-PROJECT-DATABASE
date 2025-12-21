@@ -80,7 +80,7 @@ public class DB
     public DataTable GetAllInstructors()
     {
         DataTable dt = new DataTable();
-        string query = "Select * From Instructor ,USER WHERE Instructor_ID=USER_ID";
+        string query = "Select * From Instructor,[USER] WHERE Instructor_ID=USER_ID";
         SqlCommand cmd = new SqlCommand(query, con);
 
         try
@@ -102,7 +102,7 @@ public class DB
     public DataTable GetAllStudents()
     {
         DataTable dt = new DataTable();
-        string query = "Select * From Students,User WHERE Student_ID=USER_ID";
+        string query = "Select * From Students,[User] WHERE Student_ID=USER_ID";
         SqlCommand cmd = new SqlCommand(query, con);
 
         try
