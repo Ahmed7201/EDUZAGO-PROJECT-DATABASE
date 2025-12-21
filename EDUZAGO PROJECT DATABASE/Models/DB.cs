@@ -24,7 +24,6 @@
             }
             catch (Exception ex)
             {
-                // Handle exception (log it, rethrow it, etc.)
                 Console.WriteLine("An error occurred: " + ex.Message);
             }
             finally
