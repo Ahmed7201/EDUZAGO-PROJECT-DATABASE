@@ -9,21 +9,21 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
     {
         public DB db { get; set; }
 
-        public DataTable instructor_table { get; set; }
-        public DataTable student_table { get; set; }
+        public DataTable instructor_table { get; set; } = new DataTable();
+        public DataTable student_table { get; set; } = new DataTable();
         public ManageUsersModel(DB d)
         {
             db = d;
         }
 
-        
+
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Admin") return RedirectToPage("/Account/Login");
-            instructor_table=db.GetAllInstructors();
-            student_table=db.GetAllStudents();
-            
+            instructor_table = db.GetAllInstructors();
+            student_table = db.GetAllStudents();
+
 
             return Page();
         }
