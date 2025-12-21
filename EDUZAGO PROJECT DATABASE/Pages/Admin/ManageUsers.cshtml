@@ -41,10 +41,25 @@
                     {
                         @foreach (System.Data.DataRow item in Model.instructor_table.Rows)
                         {
-                            var name = item["Name"]?.ToString() ?? "Unknown";
+                            // Safely handle missing columns because backend might not be joining with USER table yet
+                            string name = "Unknown Instructor";
+                            if (item.Table.Columns.Contains("Name")) name = item["Name"]?.ToString() ?? "Unknown";
+                            else if (item.Table.Columns.Contains("Full_Name")) name = item["Full_Name"]?.ToString() ?? "Unknown";
+
+                            string email = "N/A";
+                            if (item.Table.Columns.Contains("Email")) email = item["Email"]?.ToString() ?? "N/A";
+
+                            string id = "0";
+                            if (item.Table.Columns.Contains("USER_ID")) id = item["USER_ID"].ToString();
+                            else if (item.Table.Columns.Contains("Instructor_ID")) id = item["Instructor_ID"].ToString();
+
+                            bool isApproved = false;
+                            if (item.Table.Columns.Contains("IsApproved") && item["IsApproved"] != DBNull.Value) 
+                                isApproved = Convert.ToBoolean(item["IsApproved"]);
+
                             var avatar = name.Length > 0 ? name.Substring(0, 1) : "I";
                             <tr>
-                                <td class="ps-4 fw-bold text-muted">#@(item["USER_ID"])</td>
+                                <td class="ps-4 fw-bold text-muted">#@id</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-circle bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
@@ -53,9 +68,9 @@
                                         <span class="fw-bold">@name</span>
                                     </div>
                                 </td>
-                                <td class="text-muted">@(item["Email"] ?? "N/A")</td>
+                                <td class="text-muted">@email</td>
                                 <td>
-                                    @if (item["IsApproved"] != DBNull.Value && (bool)item["IsApproved"])
+                                    @if (isApproved)
                                     {
                                         <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Approved</span>
                                     }
@@ -65,15 +80,15 @@
                                     }
                                 </td>
                                 <td class="text-end pe-4">
-                                    @if (item["IsApproved"] == DBNull.Value || !(bool)item["IsApproved"])
+                                    @if (!isApproved)
                                     {
-                                        <form method="post" asp-page-handler="Approve" asp-route-id="@item["USER_ID"]" class="d-inline">
+                                        <form method="post" asp-page-handler="Approve" asp-route-id="@id" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-success shadow-sm me-1">
                                                 <i class="bi bi-check-lg"></i> Approve
                                             </button>
                                         </form>
                                     }
-                                    <form method="post" asp-page-handler="DeleteInstructor" asp-route-id="@item["USER_ID"]"
+                                    <form method="post" asp-page-handler="DeleteInstructor" asp-route-id="@id"
                                         class="d-inline" onsubmit="return confirm('Are you sure you want to delete this instructor?');">
                                         <button type="submit" class="btn btn-sm btn-danger shadow-sm">
                                             <i class="bi bi-trash"></i> Delete
@@ -115,10 +130,19 @@
                     {
                         @foreach (System.Data.DataRow item in Model.student_table.Rows)
                         {
-                            var name = item["Name"]?.ToString() ?? "Unknown";
+                            string name = "Unknown Student";
+                            if (item.Table.Columns.Contains("Name")) name = item["Name"]?.ToString() ?? "Unknown";
+
+                            string email = "N/A";
+                            if (item.Table.Columns.Contains("Email")) email = item["Email"]?.ToString() ?? "N/A";
+
+                            string id = "0";
+                            if (item.Table.Columns.Contains("USER_ID")) id = item["USER_ID"].ToString();
+                            else if (item.Table.Columns.Contains("Student_ID")) id = item["Student_ID"].ToString();
+
                             var avatar = name.Length > 0 ? name.Substring(0, 1) : "S";
                             <tr>
-                                <td class="ps-4 fw-bold text-muted">#@item["USER_ID"]</td>
+                                <td class="ps-4 fw-bold text-muted">#@id</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-circle bg-success bg-opacity-10 text-success rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
@@ -127,9 +151,9 @@
                                         <span class="fw-bold">@name</span>
                                     </div>
                                 </td>
-                                <td class="text-muted">@(item["Email"] ?? "N/A")</td>
+                                <td class="text-muted">@email</td>
                                 <td class="text-end pe-4">
-                                    <form method="post" asp-page-handler="DeleteStudent" asp-route-id="@item["USER_ID"]" class="d-inline"
+                                    <form method="post" asp-page-handler="DeleteStudent" asp-route-id="@id" class="d-inline"
                                         onsubmit="return confirm('Are you sure you want to delete this student?');">
                                         <button type="submit" class="btn btn-sm btn-danger shadow-sm">
                                             <i class="bi bi-trash"></i> Delete

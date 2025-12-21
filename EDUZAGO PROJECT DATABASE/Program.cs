@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<EDUZAGO_PROJECT_DATABASE.Models.DB>();
 
 var app = builder.Build();
 

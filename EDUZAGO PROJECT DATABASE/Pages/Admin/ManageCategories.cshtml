@@ -66,24 +66,34 @@
                             </tr>
                         </thead>
                         <tbody class="border-top-0">
-                            @foreach (var item in Model.Categories)
+                            @if (Model.Category_table.Rows.Count == 0)
                             {
                                 <tr>
-                                    <td class="ps-4 fw-bold text-muted">#@item.CategoryID</td>
-                                    <td>
-                                        <span class="badge bg-light text-dark border">@item.CategoryName</span>
-                                    </td>
-                                    <td class="text-muted small">@item.Description</td>
-                                    <td class="text-end pe-4">
-                                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.CategoryID"
-                                            class="d-inline"
-                                            onsubmit="return confirm('Are you sure? Deleting a category usually deletes dependent courses too via Cascade.');">
-                                            <button type="submit" class="btn btn-sm btn-danger shadow-sm">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </form>
-                                    </td>
+                                    <td colspan="4" class="text-center py-4 text-muted small">No categories found in
+                                        database.</td>
                                 </tr>
+                            }
+                            else
+                            {
+                                @foreach (System.Data.DataRow item in Model.Category_table.Rows)
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-muted">#@item["CategoryID"]</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">@item["CategoryName"]</span>
+                                        </td>
+                                        <td class="text-muted small">@(item["Description"] ?? "No description provided.")</td>
+                                        <td class="text-end pe-4">
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@item["CategoryID"]"
+                                                class="d-inline"
+                                                onsubmit="return confirm('Are you sure? Deleting a category usually deletes dependent courses too via Cascade.');">
+                                                <button type="submit" class="btn btn-sm btn-danger shadow-sm">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>
