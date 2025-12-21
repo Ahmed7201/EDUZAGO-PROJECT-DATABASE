@@ -2,5 +2,12 @@
 {
     public class DB
     {
+
+
+
+        public DB()
+        {
+            con= new SqlConnection(connectionsrting);
+        }
     }
 }
