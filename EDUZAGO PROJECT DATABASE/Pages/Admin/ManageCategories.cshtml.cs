@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
 {
     public class ManageCategoriesModel : PageModel
     {
-        public ManageCategoriesModel()
+        public DB db { get; set; }
+        public ManageCategoriesModel(DB d)
         {
+            db = d;
         }
 
-        public List<Category> Categories { get; set; } = new List<Category>();
+        public DataTable Category_table { get; set; } = new DataTable();
 
         [BindProperty]
         public Category NewCategory { get; set; } = new Category();
@@ -20,11 +23,8 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             var role = HttpContext.Session.GetString("Role");
             if (role != "Admin") return RedirectToPage("/Account/Login");
 
-            Categories = new List<Category>
-             {
-                 new Category { CategoryID = 1, CategoryName = "Mock Category 1", Description = "Desc 1" },
-                 new Category { CategoryID = 2, CategoryName = "Mock Category 2", Description = "Desc 2" }
-             };
+            Category_table = db.GetAllCategories();
+           
             return Page();
         }
 
