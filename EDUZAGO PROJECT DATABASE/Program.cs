@@ -1,24 +1,12 @@
-using Microsoft.EntityFrameworkCore;
-using EDUZAGO_PROJECT_DATABASE.Data;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
-// builder.Services.AddDbContext<EduzagoContext>(options =>
-//     options.UseInMemoryDatabase("EduzagoDb"));
 
 var app = builder.Build();
 
-// Seed Data
-// using (var scope = app.Services.CreateScope())
-// {
-//     var services = scope.ServiceProvider;
-//     var context = services.GetRequiredService<EduzagoContext>();
-//     // EDUZAGO_PROJECT_DATABASE.Data.DbInitializer.Initialize(context);
-// }
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
