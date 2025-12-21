@@ -1,12 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EDUZAGO_PROJECT_DATABASE.Models
+
 {
     public class Course
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)] // String keys are usually not auto-generated
         public string CourseCode { get; set; } = string.Empty;
 
         [Required]
