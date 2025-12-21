@@ -77,6 +77,50 @@ public class DB
         }
         return count;
     }
+    public DataTable GetAllInstructors()
+    {
+        DataTable dt = new DataTable();
+        string query = "Select * From Instructor";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+    public DataTable GetAllStudents()
+    {
+        DataTable dt = new DataTable();
+        string query = "Select * From Students";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
 
     public DataTable GetAllCategories()
     {

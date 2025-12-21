@@ -1,34 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
 {
     public class ManageUsersModel : PageModel
     {
-        public ManageUsersModel()
+        public DB db { get; set; }
+
+        public DataTable instructor_table { get; set; }
+        public DataTable student_table { get; set; }
+        public ManageUsersModel(DB d)
         {
+            db = d;
         }
 
-        public List<EDUZAGO_PROJECT_DATABASE.Models.Instructor> Instructors { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Instructor>();
-        public List<EDUZAGO_PROJECT_DATABASE.Models.Student> Students { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Student>();
-
+        
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Admin") return RedirectToPage("/Account/Login");
-
-            // Mock Users
-            Instructors = new List<EDUZAGO_PROJECT_DATABASE.Models.Instructor>
-             {
-                 new EDUZAGO_PROJECT_DATABASE.Models.Instructor { USER_ID = 1, Name = "Dr. Strange", Email = "strange@edu.com", IsApproved = true },
-                 new EDUZAGO_PROJECT_DATABASE.Models.Instructor { USER_ID = 2, Name = "Pending Prof", Email = "pending@edu.com", IsApproved = false }
-             };
-
-            Students = new List<EDUZAGO_PROJECT_DATABASE.Models.Student>
-             {
-                 new EDUZAGO_PROJECT_DATABASE.Models.Student { USER_ID = 1, Name = "Peter Parker", Email = "spidey@edu.com" }
-             };
+            instructor_table=db.GetAllInstructors();
+            student_table=db.GetAllStudents();
+            
 
             return Page();
         }

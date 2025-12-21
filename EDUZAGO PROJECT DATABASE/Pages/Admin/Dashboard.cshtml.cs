@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-
+using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
 {
     public class DashboardModel : PageModel
     {
-        public DashboardModel()
+        public DB db { get; set; }
+        public DashboardModel(DB d)
         {
+            db = d;
         }
 
         public int StudentCount { get; set; }
@@ -20,10 +23,10 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             if (role != "Admin") return RedirectToPage("/Account/Login");
 
             // Mock Stats
-            StudentCount = 1250;
-            InstructorCount = 45;
-            CourseCount = 82;
-            PendingInstructors = 3;
+            StudentCount = db.Get_StudentCount();
+            InstructorCount = db.Get_InstructorCount();
+            CourseCount = db.Get_CourseCount();
+            PendingInstructors = 0;
 
             return Page();
         }
