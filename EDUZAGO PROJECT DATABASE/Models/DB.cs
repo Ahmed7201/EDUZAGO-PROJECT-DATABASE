@@ -138,6 +138,76 @@
             }
             return dt;
         }
+        public DataTable GetCoursesByCategory(int Category_ID)
+        {
+            DataTable dt = new DataTable();
+
+            string query = "SELECT * FROM COURSE AND CATEGORY WHERE COURSE.Category_ID = @Cat_ID";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@Cat_ID", Category_ID);
+            try
+            {
+                con.Open();
+                dt.Load(cmd.ExecuteReader());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+
+            return dt;
+        }
+        public void EnrollStudent(int StudentId, string CourseCode)
+        {
+            string query = "INSERT INTO Enrollment(Student_ID,Course_Code,Enrollment_Date) VALUES (@sid, @cc, @edate)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", StudentId);
+            cmd.Parameters.AddWithValue("@cc", CourseCode);
+            cmd.Parameters.AddWithValue("@edate", DateTime.Now);
+            try
+            {
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        public DataTable GetStudentEnrollments(int StudentId)
+        {
+            DataTable dt = new DataTable();
+
+            string query = @"SELECT C.*, E.Enrollment_Date
+                     FROM COURSE C
+                     WHERE C.Course_Code = E.Course_Code AND E.Student_ID = @sid";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", StudentId);
+            try
+            {
+                con.Open();
+                dt.Load(cmd.ExecuteReader());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+
+            return dt;
+        }
 
     }
 }
