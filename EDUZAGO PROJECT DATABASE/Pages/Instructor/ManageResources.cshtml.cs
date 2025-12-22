@@ -1,34 +1,48 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 {
     public class ManageResourcesModel : PageModel
     {
-        public string CourseTitle { get; set; } = "Mock Course";
+        public DB db { get; set; }
+        public string CourseTitle { get; set; } = "";
         public List<EDUZAGO_PROJECT_DATABASE.Models.Resource> Resources { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Resource>();
+
+        [BindProperty]
+        public EDUZAGO_PROJECT_DATABASE.Models.Resource NewResource { get; set; } = new EDUZAGO_PROJECT_DATABASE.Models.Resource();
+
+        public ManageResourcesModel()
+        {
+            db = new DB();
+        }
 
         public void OnGet(string courseId)
         {
-            CourseTitle = $"Mock Course {courseId}";
-            Resources = new List<EDUZAGO_PROJECT_DATABASE.Models.Resource>
+            CourseTitle = courseId;
+            DataTable dt = db.GetResources(courseId);
+            foreach (DataRow row in dt.Rows)
             {
-                new EDUZAGO_PROJECT_DATABASE.Models.Resource { ResourceID = 1, ResourceType = "Week 1 Slides", URL = "slides.pdf" },
-                new EDUZAGO_PROJECT_DATABASE.Models.Resource { ResourceID = 2, ResourceType = "Assignment 1 Spec", URL = "assign1.pdf" }
-            };
+                Resources.Add(new EDUZAGO_PROJECT_DATABASE.Models.Resource
+                {
+                    ResourceID = Convert.ToInt32(row["ResourceID"]),
+                    ResourceType = row["ResourceType"].ToString(),
+                    URL = row["URL"].ToString(),
+                    Course_Code = row["Course_Code"].ToString(),
+                    Instructor_ID = Convert.ToInt32(row["Instructor_ID"])
+                });
+            }
         }
 
-        public IActionResult OnPostAdd()
+        public IActionResult OnPostAdd(string courseId)
         {
-            // Mock Add
-            return RedirectToPage();
-        }
+            NewResource.Course_Code = courseId;
+            NewResource.Instructor_ID = 1; 
 
-        public IActionResult OnPostDelete(int id)
-        {
-            // Mock Delete
-            return RedirectToPage();
+            db.AddResource(NewResource);
+            return RedirectToPage(new { courseId = courseId });
         }
     }
 }

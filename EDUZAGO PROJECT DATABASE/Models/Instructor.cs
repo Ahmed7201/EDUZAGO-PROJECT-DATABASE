@@ -9,6 +9,6 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         public string Bio { get; set; } = string.Empty;
 
         // Keeping IsApproved as an inferred requirement for system management, though not explicitly in text schema
-        public bool IsApproved { get; set; } = false;
+        public string IsApproved { get; set; } = "Pending";
     }
 }
