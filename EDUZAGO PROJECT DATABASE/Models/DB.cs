@@ -338,4 +338,138 @@ public class DB
             con.Close();
         }
     }
+
+    public DataTable GetResources(string courseCode)
+    {
+        DataTable dt = new DataTable();
+        string query = "SELECT * FROM Resource WHERE Course_Code = @cc";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
+    public void AddResource(Resource resource)
+    {
+        string query = "INSERT INTO Resource (ResourceType, URL, Course_Code, Instructor_ID) VALUES (@type, @url, @cc, @iid)";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@type", resource.ResourceType);
+        cmd.Parameters.AddWithValue("@url", resource.URL);
+        cmd.Parameters.AddWithValue("@cc", resource.Course_Code);
+        cmd.Parameters.AddWithValue("@iid", resource.Instructor_ID);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
+
+    public DataTable GetSchedule(string courseCode)
+    {
+        DataTable dt = new DataTable();
+        string query = "SELECT * FROM Schedule WHERE Course_Code = @cc";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
+    public void AddSchedule(Schedule schedule)
+    {
+        string query = "INSERT INTO Schedule (SessionTime, SessionDetails, Course_Code, Instructor_ID) VALUES (@time, @details, @cc, @iid)";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@time", schedule.SessionTime);
+        cmd.Parameters.AddWithValue("@details", schedule.SessionDetails);
+        cmd.Parameters.AddWithValue("@cc", schedule.Course_Code);
+        cmd.Parameters.AddWithValue("@iid", schedule.Instructor_ID);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
+
+    public void UpdateGrade(int initialGradeID, string newGrade)
+    {
+        string query = "UPDATE Grade SET Progress = @grade WHERE GradeID = @gid";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@grade", newGrade);
+        cmd.Parameters.AddWithValue("@gid", initialGradeID);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
+
+    public void AddReview(Review review)
+    {
+        string query = "INSERT INTO Review (Content, Rating, Course_Code, Student_ID) VALUES (@content, @rating, @cc, @sid)";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@content", review.Content);
+        cmd.Parameters.AddWithValue("@rating", review.Rating);
+        cmd.Parameters.AddWithValue("@cc", review.Course_Code);
+        cmd.Parameters.AddWithValue("@sid", review.Student_ID);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
 }
