@@ -43,12 +43,20 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             // Use the object's ID to fetch courses
             MyCourses = db.GetInstructorCourses(CurrentInstructor);
 
-            // Mock schedule for display (as DB doesn't have an aggregated schedule query yet)
-            WeeklySchedule = new List<AggregatedScheduleItem>
+            // Populate schedule from real courses (mocking the time slots)
+            WeeklySchedule = new List<AggregatedScheduleItem>();
+            int dayOffset = 0;
+            foreach (DataRow row in MyCourses.Rows)
             {
-                new AggregatedScheduleItem { CourseCode="AI-201", CourseTitle="Advanced AI", SessionDetails="Neural Networks", SessionTime=DateTime.Now.AddDays(0) },
-                new AggregatedScheduleItem { CourseCode="CC-202", CourseTitle="Cloud Computing", SessionDetails="AWS Basics", SessionTime=DateTime.Now.AddDays(1) }
-            };
+                WeeklySchedule.Add(new AggregatedScheduleItem
+                {
+                    CourseCode = row["Course_Code"].ToString(),
+                    CourseTitle = row["Title"].ToString(),
+                    SessionDetails = "Weekly Session",
+                    SessionTime = DateTime.Now.AddDays(dayOffset % 7) // Spread across the week
+                });
+                dayOffset++;
+            }
 
             return Page();
         }
