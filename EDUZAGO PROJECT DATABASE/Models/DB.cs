@@ -553,6 +553,25 @@ public class DB
             con.Close();
         }
     }
+    public void DeleteCategory(Category c)
+    {
+        string query = "Delete From Category where Category_ID=@cat_id";
+        SqlCommand cmd= new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cat_id", c.CategoryID);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally 
+        {
+            con.Close(); 
+        }
+    }
 
     public DataTable GetStudentsForCourse(string courseCode)
     {
@@ -657,6 +676,7 @@ public class DB
         return result;
 
     }
+
 
 }
 
