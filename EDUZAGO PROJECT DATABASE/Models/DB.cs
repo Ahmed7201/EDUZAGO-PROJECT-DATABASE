@@ -676,6 +676,34 @@ public class DB
         return result;
 
     }
+    public int GETAdminWhoApproved(Instructor I)
+    {
+        int Admin_ID = 0;
+        DataTable dt=new DataTable();
+        string query = " Select Admin_ID\r\n From INSTRUCTOR I\r\n where I.Approval_Status='Approved' and I.Instructor_ID=@I_id";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@I_id", I.USER_ID);
+
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+            if (dt.Rows.Count > 0)
+            { 
+                Admin_ID = Convert.ToInt32(dt.Rows[0][0]);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return Admin_ID;
+
+    }
 
 
 }
