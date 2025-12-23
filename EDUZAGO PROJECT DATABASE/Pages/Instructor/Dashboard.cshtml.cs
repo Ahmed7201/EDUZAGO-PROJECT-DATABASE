@@ -46,12 +46,12 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             return Page();
         }
 
-        public class AggregatedScheduleItem
+        public IActionResult OnPostDeleteCourse(string id)
         {
-            public string CourseCode { get; set; }
-            public string CourseTitle { get; set; }
-            public string SessionDetails { get; set; }
-            public DateTime SessionTime { get; set; }
+            if (string.IsNullOrEmpty(id)) return Page();
+
+            db.DeleteCourse(id);
+            return RedirectToPage();
         }
     }
 }

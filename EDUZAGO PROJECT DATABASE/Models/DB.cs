@@ -1,6 +1,7 @@
-﻿namespace EDUZAGO_PROJECT_DATABASE.Models;
+﻿using Microsoft.Data.SqlClient;
 
-using Microsoft.Data.SqlClient;
+namespace EDUZAGO_PROJECT_DATABASE.Models;
+
 using System.Data;
 
 public class DB
@@ -77,6 +78,7 @@ public class DB
         }
         return count;
     }
+
     public DataTable GetAllInstructors()
     {
         DataTable dt = new DataTable();
@@ -99,6 +101,7 @@ public class DB
         }
         return dt;
     }
+
     public DataTable GetAllStudents()
     {
         DataTable dt = new DataTable();
@@ -471,6 +474,143 @@ public class DB
         {
             con.Close();
         }
+    }
+
+    public DataTable GetStudentsWithGrades(string courseCode)
+    {
+        DataTable dt = new DataTable();
+
+        string betterQuery = @"
+            SELECT G.GradeID, S.Student_ID, U.Name, U.Email, G.CompletionStatus, G.Progress
+            FROM Grade G
+            JOIN Student S ON G.Student_ID = S.Student_ID
+            JOIN [User] U ON S.Student_ID = U.User_ID
+            WHERE G.Course_Code = @cc";
+
+        SqlCommand cmd = new SqlCommand(betterQuery, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
+    public int UpdateCourse(Course course)
+    {
+        int result = 0;
+        string q = "Update Course Set Course_Code=@ccode,Title=@title,Fees=@fee,Description=@des,Duration=@duration,Category_ID=@categoryid,Admin_ID=@adminid,Instructor_ID=@instructorid Where Course_Code=@ccode";
+        SqlCommand cmd = new SqlCommand(q, con);
+        cmd.Parameters.AddWithValue("@ccode", course.CourseCode);
+        cmd.Parameters.AddWithValue("@title", course.Title);
+        cmd.Parameters.AddWithValue("@fee", course.Fees);
+        cmd.Parameters.AddWithValue("@des", course.Description);
+        cmd.Parameters.AddWithValue("@duration", course.Duration);
+        cmd.Parameters.AddWithValue("@categoryid", course.Category_ID);
+        cmd.Parameters.AddWithValue("@adminid", course.Admin_ID);
+        cmd.Parameters.AddWithValue("@instructorid", course.Instructor_ID);
+        try
+        {
+            con.Open();
+            result = cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return result;
+    }
+
+    public void DeleteCourse(string courseCode)
+    {
+        string q = "Delete from Course where Course_Code=@ccode";
+        SqlCommand cmd = new SqlCommand(q, con);
+        cmd.Parameters.AddWithValue("@ccode", courseCode);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
+
+    public DataTable GetStudentsForCourse(string courseCode)
+    {
+        DataTable dt = new DataTable();
+        string q = @"SELECT S.*, U.Name, U.Email, E.Enrollment_Date 
+                     FROM STUDENT S 
+                     JOIN [USER] U ON S.Student_ID = U.USER_ID
+                     JOIN Enrollment E ON S.Student_ID = E.Student_ID
+                     WHERE E.Course_Code = @ccode";
+        SqlCommand cmd = new SqlCommand(q, con);
+        cmd.Parameters.AddWithValue("@ccode", courseCode);
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
+    public Course GetCourse(string courseCode)
+    {
+        Course c = new Course();
+        string query = "SELECT * FROM COURSE WHERE Course_Code = @ccode";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@ccode", courseCode);
+        try
+        {
+            con.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                c.CourseCode = reader["Course_Code"].ToString();
+                c.Title = reader["Title"].ToString();
+                c.Description = reader["Description"] != DBNull.Value ? reader["Description"].ToString() : "";
+                c.Duration = reader["Duration"] != DBNull.Value ? reader["Duration"].ToString() : "";
+                c.Fees = reader["Fees"] != DBNull.Value ? Convert.ToDecimal(reader["Fees"]) : 0;
+                c.Category_ID = reader["Category_ID"] != DBNull.Value ? Convert.ToInt32(reader["Category_ID"]) : 0;
+                c.Instructor_ID = reader["Instructor_ID"] != DBNull.Value ? Convert.ToInt32(reader["Instructor_ID"]) : 0;
+                c.Admin_ID = reader["Admin_ID"] != DBNull.Value ? Convert.ToInt32(reader["Admin_ID"]) : 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return c;
     }
     public int Approve_Instructor(Instructor I)
     {
