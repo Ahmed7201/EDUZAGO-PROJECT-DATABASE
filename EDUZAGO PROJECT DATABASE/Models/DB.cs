@@ -270,11 +270,11 @@ public class DB
 
         string q = "select  c.Course_Code,c.Title from course c , iNSTRUCTOR i where c.Instructor_ID = i.@InstructorID";
         SqlCommand cmd = new SqlCommand(q, con);
-
+        cmd.Parameters.AddWithValue("@InstructorID", instructor_id);
         try
         {
             con.Open();
-            cmd.Parameters.AddWithValue("@InstructorID", instructor_id);
+            
             dt.Load(cmd.ExecuteReader());
         }
         catch (Exception ex)

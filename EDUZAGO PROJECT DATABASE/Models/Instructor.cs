@@ -14,6 +14,6 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
 
         public int Admin_ID { get; set; }
         [ForeignKey("Admin_ID")]
-        public required Admin Admin { get; set; }
+        public Admin? Admin { get; set; }
     }
 }

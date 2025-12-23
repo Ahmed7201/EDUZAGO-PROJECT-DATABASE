@@ -51,7 +51,12 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         {
             // Directly assign the Instructor ID from session to the Course object
             Course.Instructor_ID = Convert.ToInt32(HttpContext.Session.GetString("UserId"));
-            Course.Admin_ID = 1; // Default admin ID as we don't have Admin session in Instructor view
+
+            // Get the Admin who approved this instructor to link them to the course
+            EDUZAGO_PROJECT_DATABASE.Models.Instructor tempInst = new EDUZAGO_PROJECT_DATABASE.Models.Instructor();
+            tempInst.USER_ID = Course.Instructor_ID;
+            Course.Admin_ID = db.GETAdminWhoApproved(tempInst);
+            if (Course.Admin_ID == 0) Course.Admin_ID = 1; // Fallback if 0 returned
 
             // Check if course exists to decide Add or Update
             Course existing = db.GetCourse(Course.CourseCode);

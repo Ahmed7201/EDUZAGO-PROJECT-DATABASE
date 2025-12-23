@@ -9,7 +9,7 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
 
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Welcome, @Model.Instructor?.Name</h1>
+        <h1>Welcome, @Model.CurrentInstructor?.Name</h1>
         <a asp-page="./ManageCourse" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-2"></i>Create New
             Course</a>
     </div>
