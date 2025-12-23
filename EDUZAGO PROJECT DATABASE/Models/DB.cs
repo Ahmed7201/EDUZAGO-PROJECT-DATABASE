@@ -1,6 +1,7 @@
-﻿namespace EDUZAGO_PROJECT_DATABASE.Models;
+﻿using Microsoft.Data.SqlClient;
 
-using Microsoft.Data.SqlClient;
+namespace EDUZAGO_PROJECT_DATABASE.Models;
+
 using System.Data;
 
 public class DB
@@ -77,6 +78,7 @@ public class DB
         }
         return count;
     }
+
     public DataTable GetAllInstructors()
     {
         DataTable dt = new DataTable();
@@ -99,6 +101,7 @@ public class DB
         }
         return dt;
     }
+
     public DataTable GetAllStudents()
     {
         DataTable dt = new DataTable();
@@ -472,13 +475,19 @@ public class DB
             con.Close();
         }
     }
-}
 
-    public DataTable GetResources(string courseCode)
+    public DataTable GetStudentsWithGrades(string courseCode)
     {
         DataTable dt = new DataTable();
-        string query = "SELECT * FROM Resource WHERE Course_Code = @cc";
-        SqlCommand cmd = new SqlCommand(query, con);
+
+        string betterQuery = @"
+            SELECT G.GradeID, S.Student_ID, U.Name, U.Email, G.CompletionStatus, G.Progress
+            FROM Grade G
+            JOIN Student S ON G.Student_ID = S.Student_ID
+            JOIN [User] U ON S.Student_ID = U.User_ID
+            WHERE G.Course_Code = @cc";
+
+        SqlCommand cmd = new SqlCommand(betterQuery, con);
         cmd.Parameters.AddWithValue("@cc", courseCode);
         try
         {
@@ -494,118 +503,6 @@ public class DB
             con.Close();
         }
         return dt;
-    }
-
-    public void AddResource(Resource resource)
-    {
-        string query = "INSERT INTO Resource (ResourceType, URL, Course_Code, Instructor_ID) VALUES (@type, @url, @cc, @iid)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@type", resource.ResourceType);
-        cmd.Parameters.AddWithValue("@url", resource.URL);
-        cmd.Parameters.AddWithValue("@cc", resource.Course_Code);
-        cmd.Parameters.AddWithValue("@iid", resource.Instructor_ID);
-        try
-        {
-            con.Open();
-            cmd.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
-            con.Close();
-        }
-    }
-
-    public DataTable GetSchedule(string courseCode)
-    {
-        DataTable dt = new DataTable();
-        string query = "SELECT * FROM Schedule WHERE Course_Code = @cc";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@cc", courseCode);
-        try
-        {
-            con.Open();
-            dt.Load(cmd.ExecuteReader());
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
-            con.Close();
-        }
-        return dt;
-    }
-
-    public void AddSchedule(Schedule schedule)
-    {
-        string query = "INSERT INTO Schedule (SessionTime, SessionDetails, Course_Code, Instructor_ID) VALUES (@time, @details, @cc, @iid)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@time", schedule.SessionTime);
-        cmd.Parameters.AddWithValue("@details", schedule.SessionDetails);
-        cmd.Parameters.AddWithValue("@cc", schedule.Course_Code);
-        cmd.Parameters.AddWithValue("@iid", schedule.Instructor_ID);
-        try
-        {
-            con.Open();
-            cmd.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
-            con.Close();
-        }
-    }
-
-    public void UpdateGrade(int initialGradeID, string newGrade)
-    {
-        string query = "UPDATE Grade SET Progress = @grade WHERE GradeID = @gid";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@grade", newGrade);
-        cmd.Parameters.AddWithValue("@gid", initialGradeID);
-        try
-        {
-            con.Open();
-            cmd.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
-            con.Close();
-        }
-    }
-
-    public void AddReview(Review review)
-    {
-        string query = "INSERT INTO Review (Content, Rating, Course_Code, Student_ID) VALUES (@content, @rating, @cc, @sid)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@content", review.Content);
-        cmd.Parameters.AddWithValue("@rating", review.Rating);
-        cmd.Parameters.AddWithValue("@cc", review.Course_Code);
-        cmd.Parameters.AddWithValue("@sid", review.Student_ID);
-        try
-        {
-            con.Open();
-            cmd.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
-            con.Close();
-        }
     }
 
     public int UpdateCourse(Course course)
@@ -702,7 +599,6 @@ public class DB
                 c.Fees = reader["Fees"] != DBNull.Value ? Convert.ToDecimal(reader["Fees"]) : 0;
                 c.Category_ID = reader["Category_ID"] != DBNull.Value ? Convert.ToInt32(reader["Category_ID"]) : 0;
                 c.Instructor_ID = reader["Instructor_ID"] != DBNull.Value ? Convert.ToInt32(reader["Instructor_ID"]) : 0;
-                // Admin_ID might be nullable or 0
                 c.Admin_ID = reader["Admin_ID"] != DBNull.Value ? Convert.ToInt32(reader["Admin_ID"]) : 0;
             }
         }
@@ -716,5 +612,4 @@ public class DB
         }
         return c;
     }
-
 }
