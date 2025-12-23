@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using EDUZAGO_PROJECT_DATABASE.Models;
+using Microsoft.Data.SqlClient;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        public LoginModel()
+        private readonly DB db;
+
+        public LoginModel(DB db)
         {
+            this.db = db;
         }
 
         [BindProperty]
@@ -35,46 +40,23 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.Account
                 return Page();
             }
 
-            // MOCK AUTHENTICATION LOGIC (GUI ONLY)
-            // Convention:
-            // "s-" prefix -> Student
-            // "i-" prefix -> Instructor
-            // "a-" prefix -> Admin
+            var user = db.Login(Input.Email, Input.Password);
+            if (user != null)
+            {
+                // Login successful
+                HttpContext.Session.SetString("UserId", user.USER_ID.ToString());
+                HttpContext.Session.SetString("UserName", user.Name);
+                HttpContext.Session.SetString("Role", user.Role);
 
-            string role = "";
-            string redirectPage = "";
-            string userName = "User";
+                if (user.Role == "Admin") return RedirectToPage("/Admin/Dashboard");
+                if (user.Role == "Instructor") return RedirectToPage("/Instructor/Dashboard");
+                if (user.Role == "Student") return RedirectToPage("/Student/Dashboard");
 
-            if (Input.Email.ToLower().StartsWith("s-"))
-            {
-                role = "Student";
-                userName = "Student User";
-                redirectPage = "/Student/Dashboard";
-            }
-            else if (Input.Email.ToLower().StartsWith("i-"))
-            {
-                role = "Instructor";
-                userName = "Instructor User";
-                redirectPage = "/Instructor/Dashboard";
-            }
-            else if (Input.Email.ToLower().StartsWith("a-"))
-            {
-                role = "Admin";
-                userName = "Admin User";
-                redirectPage = "/Admin/Dashboard";
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid mock prefix. Use 's-', 'i-', or 'a-' at start of email.");
-                return Page();
+                return RedirectToPage("/Index");
             }
 
-            // Set Session
-            HttpContext.Session.SetString("Role", role);
-            HttpContext.Session.SetString("UserId", "1"); // Mock ID
-            HttpContext.Session.SetString("UserName", userName);
-
-            return RedirectToPage(redirectPage);
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return Page();
         }
     }
 }

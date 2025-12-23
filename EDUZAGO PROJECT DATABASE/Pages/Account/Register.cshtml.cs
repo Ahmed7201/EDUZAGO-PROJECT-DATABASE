@@ -1,11 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using EDUZAGO_PROJECT_DATABASE.Models;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.Account
 {
     public class RegisterModel : PageModel
     {
+        private readonly DB db;
+
+        public RegisterModel(DB db)
+        {
+            this.db = db;
+        }
+
         [BindProperty]
         public InputModel Input { get; set; } = new InputModel();
 
@@ -16,8 +24,20 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.Account
 
         public IActionResult OnPost()
         {
-            // Mock Registration Success
-            return RedirectToPage("./Login");
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            if (db.RegisterUser(Input.Name, Input.Email, Input.Password))
+            {
+                // Registration successful
+                // Optionally log them in immediately, but standard is redirect to login
+                return RedirectToPage("./Login");
+            }
+
+            ModelState.AddModelError(string.Empty, "Registration failed. Email might already exist.");
+            return Page();
         }
 
         public class InputModel

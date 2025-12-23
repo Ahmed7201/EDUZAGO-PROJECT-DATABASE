@@ -14,6 +14,77 @@ public class DB
         con = new SqlConnection(connectionstring);
     }
 
+    // Centralized DB connection handler
+    public SqlConnection GetConnection()
+    {
+        if (con.State != ConnectionState.Open)
+            con.Open();
+
+        return con;
+    }
+
+    // Validate user login credentials
+    // Authenticate user and return User object with details, or null if failed
+    public User Login(string email, string password)
+    {
+        string query = "SELECT User_ID, Name, Role, Email FROM [User] WHERE Email = @email AND Password = @password";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@email", email);
+        cmd.Parameters.AddWithValue("@password", password);
+
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                User user = new User();
+                user.USER_ID = Convert.ToInt32(reader["User_ID"]);
+                user.Name = reader["Name"].ToString();
+                user.Role = reader["Role"].ToString();
+                user.Email = reader["Email"].ToString();
+                return user;
+            }
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return null;
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
+
+    // Register a new user
+    public bool RegisterUser(string name, string email, string password)
+    {
+        string query = "INSERT INTO [User] (Name, Email, Password) VALUES (@name, @email, @password)";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@name", name);
+        cmd.Parameters.AddWithValue("@email", email);
+        cmd.Parameters.AddWithValue("@password", password);
+
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            cmd.ExecuteNonQuery();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return false;
+        }
+        finally
+        {
+            con.Close();
+        }
+    }
+
     public int Get_StudentCount()
     {
         int count = 0;
@@ -268,7 +339,8 @@ public class DB
     {
         DataTable dt = new DataTable();
 
-        string q = "select * from Course where Instructor_ID = @InstructorID";
+        string q = "SELECT * FROM Course WHERE Instructor_ID = @InstructorID";
+        Console.WriteLine("DEBUG: Fetching courses for InstructorID: " + I.USER_ID);
         SqlCommand cmd = new SqlCommand(q, con);
         cmd.Parameters.AddWithValue("@InstructorID", I.USER_ID);
         try
@@ -289,16 +361,16 @@ public class DB
 
     public void Addcourse(Course newcourse)
     {
-        string q = "Insert into (Course_Code , Title, Fees, Description, Duration, Category_ID, Admin_ID, Instructor_ID) Values (@ccode,@title,@fee,@des,@duration,@categoryid,@adminid,@instructorid)";
+        string q = "Insert into Course (Course_Code , Title, Fees, Description, Duration, Category_ID, Admin_ID, Instructor_ID) Values (@ccode,@title,@fee,@des,@duration,@categoryid,@adminid,@instructorid)";
         SqlCommand cmd = new SqlCommand(q, con);
         cmd.Parameters.AddWithValue("@ccode", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@title", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@fee", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@des", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@duration", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@categoryid", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@adminid", newcourse.CourseCode);
-        cmd.Parameters.AddWithValue("@instructorid", newcourse.CourseCode);
+        cmd.Parameters.AddWithValue("@title", newcourse.Title);
+        cmd.Parameters.AddWithValue("@fee", newcourse.Fees);
+        cmd.Parameters.AddWithValue("@des", newcourse.Description);
+        cmd.Parameters.AddWithValue("@duration", newcourse.Duration);
+        cmd.Parameters.AddWithValue("@categoryid", newcourse.Category_ID);
+        cmd.Parameters.AddWithValue("@adminid", newcourse.Admin_ID);
+        cmd.Parameters.AddWithValue("@instructorid", newcourse.Instructor_ID);
 
         try
         {
