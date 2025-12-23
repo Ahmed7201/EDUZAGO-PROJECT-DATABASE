@@ -21,7 +21,8 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 
         public void OnGet(string courseId)
         {
-            CourseTitle = courseId;
+            CourseTitle = db.GetCourse(courseId).Title;
+            if(string.IsNullOrEmpty(CourseTitle)) CourseTitle = courseId;
             DataTable dt = db.GetResources(courseId);
             foreach (DataRow row in dt.Rows)
             {
