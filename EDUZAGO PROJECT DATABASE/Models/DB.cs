@@ -6,7 +6,7 @@ using System.Data;
 
 public class DB
 {
-    private string connectionstring = "Data Source=DESKTOP-SQFUII7;Initial Catalog=EDUZAGO_DB;Integrated Security=True;Trust Server Certificate=True";
+    private string connectionstring = "Data Source=DESKTOP-SQFUII7;Initial Catalog=EDUZAGO_DB;Integrated Security=True;Trust Server Certificate=True;MultipleActiveResultSets=True";
     public SqlConnection con { get; set; }
 
     public DB()
@@ -27,7 +27,7 @@ public class DB
     // Authenticate user and return User object with details, or null if failed
     public User Login(string email, string password)
     {
-        string query = "SELECT User_ID, Name, Role, Email FROM [User] WHERE Email = @email AND Password = @password";
+        string query = "SELECT User_ID, Name, Email FROM [User] WHERE Email = @email AND Password = @password";
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@email", email);
         cmd.Parameters.AddWithValue("@password", password);
@@ -37,15 +37,53 @@ public class DB
             if (con.State != ConnectionState.Open) con.Open();
             SqlDataReader reader = cmd.ExecuteReader();
 
+            User user = null;
             if (reader.Read())
             {
-                User user = new User();
+                user = new User();
                 user.USER_ID = Convert.ToInt32(reader["User_ID"]);
-                user.Name = reader["Name"].ToString();
-                user.Role = reader["Role"].ToString();
-                user.Email = reader["Email"].ToString();
+                user.Name = reader["Name"] != DBNull.Value ? reader["Name"].ToString() : "";
+                user.Email = reader["Email"] != DBNull.Value ? reader["Email"].ToString() : "";
+            }
+            reader.Close(); // Close reader before running other commands
+
+            if (user != null)
+            {
+                // Determine Role
+                int userId = user.USER_ID;
+
+                // Check Admin
+                SqlCommand roleCmd = new SqlCommand("SELECT COUNT(*) FROM Admin WHERE Admin_ID = @uid", con);
+                roleCmd.Parameters.AddWithValue("@uid", userId);
+                if ((int)roleCmd.ExecuteScalar() > 0)
+                {
+                    user.Role = "Admin";
+                    return user;
+                }
+
+                // Check Instructor
+                roleCmd = new SqlCommand("SELECT COUNT(*) FROM Instructor WHERE Instructor_ID = @uid", con);
+                roleCmd.Parameters.AddWithValue("@uid", userId);
+                if ((int)roleCmd.ExecuteScalar() > 0)
+                {
+                    user.Role = "Instructor";
+                    return user;
+                }
+
+                // Check Student
+                roleCmd = new SqlCommand("SELECT COUNT(*) FROM Student WHERE Student_ID = @uid", con);
+                roleCmd.Parameters.AddWithValue("@uid", userId);
+                if ((int)roleCmd.ExecuteScalar() > 0)
+                {
+                    user.Role = "Student";
+                    return user;
+                }
+
+                // Fallback default
+                user.Role = "Student";
                 return user;
             }
+
             return null;
         }
         catch (Exception ex)
