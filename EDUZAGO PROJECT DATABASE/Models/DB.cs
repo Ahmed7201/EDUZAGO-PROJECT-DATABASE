@@ -377,7 +377,7 @@ public class DB
     {
         DataTable dt = new DataTable();
 
-        string q = "SELECT * FROM Course WHERE Instructor_ID = @InstructorID";
+        string q = "SELECT Course_Code,Title,Category_ID\r\n FROM Course \r\n WHERE Instructor_ID = @InstructorID";
         Console.WriteLine("DEBUG: Fetching courses for InstructorID: " + I.USER_ID);
         SqlCommand cmd = new SqlCommand(q, con);
         cmd.Parameters.AddWithValue("@InstructorID", I.USER_ID);
