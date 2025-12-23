@@ -1,17 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 {
     public class DashboardModel : PageModel
     {
-        public DashboardModel()
+        private readonly DB db;
+
+        public DashboardModel(DB db)
         {
+            this.db = db;
         }
 
-        public EDUZAGO_PROJECT_DATABASE.Models.Instructor Instructor { get; set; }
-        public List<EDUZAGO_PROJECT_DATABASE.Models.Course> MyCourses { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Course>();
+        public EDUZAGO_PROJECT_DATABASE.Models.Instructor CurrentInstructor { get; set; } = new EDUZAGO_PROJECT_DATABASE.Models.Instructor();
+        public DataTable MyCourses { get; set; } = new DataTable();
+
+        // Simple class for the schedule view
+        public class AggregatedScheduleItem
+        {
+            public string CourseCode { get; set; }
+            public string CourseTitle { get; set; }
+            public string SessionDetails { get; set; }
+            public DateTime SessionTime { get; set; }
+        }
         public List<AggregatedScheduleItem> WeeklySchedule { get; set; } = new List<AggregatedScheduleItem>();
 
         public IActionResult OnGet()
@@ -22,25 +35,19 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
                 return RedirectToPage("/Account/Login");
             }
 
-            // Mock Data
-            Instructor = new EDUZAGO_PROJECT_DATABASE.Models.Instructor
-            {
-                Name = "Mock Instructor",
-                Email = "i-user@eduzago.com"
-            };
+            // Populate from session
+            CurrentInstructor = new EDUZAGO_PROJECT_DATABASE.Models.Instructor();
+            CurrentInstructor.USER_ID = Convert.ToInt32(HttpContext.Session.GetString("UserId"));
+            CurrentInstructor.Name = HttpContext.Session.GetString("UserName") ?? "Instructor";
 
-            MyCourses = new List<EDUZAGO_PROJECT_DATABASE.Models.Course>
-            {
-                new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "AI-201", Title = "Advanced AI (Mock)", Duration = "8 Weeks" },
-                new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "CC-202", Title = "Cloud Computing (Mock)", Duration = "5 Weeks" }
-            };
+            // Use the object's ID to fetch courses
+            MyCourses = db.GetInstructorCourses(CurrentInstructor.USER_ID);
 
-            // Mock Aggregated Schedule
+            // Mock schedule for display (as DB doesn't have an aggregated schedule query yet)
             WeeklySchedule = new List<AggregatedScheduleItem>
             {
-                new AggregatedScheduleItem { CourseCode="AI-201", CourseTitle="Advanced AI", SessionDetails="Neural Networks", SessionTime=DateTime.Now.AddDays(0) }, // Today
-                new AggregatedScheduleItem { CourseCode="CC-202", CourseTitle="Cloud Computing", SessionDetails="AWS Basics", SessionTime=DateTime.Now.AddDays(1) },
-                new AggregatedScheduleItem { CourseCode="AI-201", CourseTitle="Advanced AI", SessionDetails="Labs", SessionTime=DateTime.Now.AddDays(3) }
+                new AggregatedScheduleItem { CourseCode="AI-201", CourseTitle="Advanced AI", SessionDetails="Neural Networks", SessionTime=DateTime.Now.AddDays(0) },
+                new AggregatedScheduleItem { CourseCode="CC-202", CourseTitle="Cloud Computing", SessionDetails="AWS Basics", SessionTime=DateTime.Now.AddDays(1) }
             };
 
             return Page();
@@ -48,9 +55,10 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 
         public IActionResult OnPostDeleteCourse(string id)
         {
-            if (string.IsNullOrEmpty(id)) return Page();
-
-            db.DeleteCourse(id);
+            if (!string.IsNullOrEmpty(id))
+            {
+                db.DeleteCourse(id);
+            }
             return RedirectToPage();
         }
     }

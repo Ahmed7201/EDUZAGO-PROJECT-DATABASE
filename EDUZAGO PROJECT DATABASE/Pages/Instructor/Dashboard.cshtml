@@ -90,24 +90,31 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
     </div>
 
     <h3>My Courses</h3>
-    @if (Model.MyCourses.Count == 0)
+    <h3>My Courses</h3>
+    @if (Model.MyCourses.Rows.Count == 0)
     {
         <div class="alert alert-info">Start by creating your first course!</div>
     }
     else
     {
         <div class="row">
-            @foreach (var course in Model.MyCourses)
+            @foreach (System.Data.DataRow row in Model.MyCourses.Rows)
             {
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm border-0">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">@course.Title</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">@course.CourseCode</h6>
-                            <p class="card-text text-muted small">Duration: @course.Duration</p>
+                            <h5 class="card-title text-primary">@row["Title"]</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@row["Course_Code"]</h6>
+                            <p class="card-text text-muted small">Duration: @row["Duration"]</p>
                             <div class="d-grid gap-2">
-                                <a asp-page="./ManageCourse" asp-route-id="@course.CourseCode"
+                                <a asp-page="./ManageCourse" asp-route-id="@row["Course_Code"]"
                                     class="btn btn-outline-primary btn-sm">Manage Course</a>
+                                <a asp-page="./ViewStudents" asp-route-courseId="@row["Course_Code"]"
+                                    class="btn btn-outline-info btn-sm">View Students</a>
+                                <form method="post" asp-page-handler="DeleteCourse" asp-route-id="@row["Course_Code"]" 
+                                      onsubmit="return confirm('Are you sure you want to delete this course?');" class="d-grid">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete Course</button>
+                                </form>
                             </div>
                         </div>
                     </div>

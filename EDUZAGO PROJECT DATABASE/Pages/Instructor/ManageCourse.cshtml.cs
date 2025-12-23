@@ -2,13 +2,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
+using System.Collections.Generic;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 {
     public class ManageCourseModel : PageModel
     {
-        public ManageCourseModel()
+        private readonly DB db;
+
+        public ManageCourseModel(DB db)
         {
+            this.db = db;
         }
 
         [BindProperty]
@@ -19,25 +24,24 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         public IActionResult OnGet(string? id)
         {
             var role = HttpContext.Session.GetString("Role");
-            if (role != "Instructor") return RedirectToPage("/Account/Login");
+            if (role != "Instructor" && role != "Admin") return RedirectToPage("/Account/Login");
 
-            Categories = new List<SelectListItem>
+            // Load Categories for Dropdown from DB
+            DataTable catDt = db.GetAllCategories();
+            foreach (DataRow row in catDt.Rows)
             {
-                new SelectListItem { Value = "1", Text = "IT" },
-                new SelectListItem { Value = "2", Text = "Business" }
-            };
+                Categories.Add(new SelectListItem
+                {
+                    // Ensure column names match what your DB returns
+                    Value = row["Category_ID"].ToString(),
+                    Text = row["Category_Name"].ToString()
+                });
+            }
 
             if (!string.IsNullOrEmpty(id))
             {
-                // Mock Existing Course
-                Course = new Course
-                {
-                    CourseCode = id,
-                    Title = "Existing Mock Course",
-                    Description = "This is a mock description",
-                    Duration = "5 Weeks",
-                    Fees = 50
-                };
+                // Edit Mode: Fetch existing course using DB
+                Course = db.GetCourse(id);
             }
 
             return Page();
@@ -45,6 +49,22 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 
         public IActionResult OnPost()
         {
+            // Directly assign the Instructor ID from session to the Course object
+            Course.Instructor_ID = Convert.ToInt32(HttpContext.Session.GetString("UserId"));
+            Course.Admin_ID = 1; // Default admin ID as we don't have Admin session in Instructor view
+
+            // Check if course exists to decide Add or Update
+            Course existing = db.GetCourse(Course.CourseCode);
+            if (!string.IsNullOrEmpty(existing.CourseCode) && !string.IsNullOrEmpty(existing.Title))
+            {
+                // Update if found
+                db.UpdateCourse(Course);
+            }
+            else
+            {
+                // Add if new
+                db.Addcourse(Course);
+            }
 
             return RedirectToPage("./Dashboard");
         }

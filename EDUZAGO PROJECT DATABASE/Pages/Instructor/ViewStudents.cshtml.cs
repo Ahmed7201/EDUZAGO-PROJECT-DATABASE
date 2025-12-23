@@ -1,31 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 {
     public class ViewStudentsModel : PageModel
     {
-        public ViewStudentsModel()
+        private readonly DB db;
+
+        public ViewStudentsModel(DB db)
         {
+            this.db = db;
         }
 
-        public EDUZAGO_PROJECT_DATABASE.Models.Course Course { get; set; }
-        public List<EDUZAGO_PROJECT_DATABASE.Models.Student> EnrolledStudents { get; set; } = new List<EDUZAGO_PROJECT_DATABASE.Models.Student>();
+        public Course CourseObj { get; set; } = new Course();
+        public DataTable StudentsTable { get; set; } = new DataTable();
 
         public IActionResult OnGet(string courseId)
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Instructor") return RedirectToPage("/Account/Login");
 
-            // Mock Data
-            Course = new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = courseId, Title = "Mock Course " + courseId };
-
-            EnrolledStudents = new List<EDUZAGO_PROJECT_DATABASE.Models.Student>
-             {
-                 new EDUZAGO_PROJECT_DATABASE.Models.Student { Name = "Alice Mock", Email = "alice@test.com" },
-                 new EDUZAGO_PROJECT_DATABASE.Models.Student { Name = "Bob Mock", Email = "bob@test.com" }
-             };
+            // Use DB to get info
+            CourseObj = db.GetCourse(courseId); // Populates basic course info like Title
+            StudentsTable = db.GetStudentsForCourse(courseId); // Returns DataTable of students
 
             return Page();
         }
