@@ -472,4 +472,51 @@ public class DB
             con.Close();
         }
     }
+    public int Approve_Instructor(Instructor I)
+    {
+        int result = 0;
+        string query = $"Update Instructor Set Approval_Status='{I.Approval_Status = "Approved"} where Instructor_ID={I.USER_ID}";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            result = cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return result;
+    }
+    public int Donot_Approve_Instructor(Instructor I)
+    {
+        int result = 0;
+        string query = $"Update Instructor Set Approval_Status='{I.Approval_Status = "Rejected"} where Instructor_ID={I.USER_ID}";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            result = cmd.ExecuteNonQuery();
+           
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return result;
+
+    }
+
 }
+
