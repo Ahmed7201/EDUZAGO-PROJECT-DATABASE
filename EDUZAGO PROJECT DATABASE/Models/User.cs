@@ -17,5 +17,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
+
+        public string Role { get; set; } = "Student";
     }
 }
