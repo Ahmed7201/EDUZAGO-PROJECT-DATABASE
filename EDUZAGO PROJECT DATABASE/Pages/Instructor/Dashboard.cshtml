@@ -10,8 +10,8 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Welcome, @Model.CurrentInstructor?.Name</h1>
-        <a asp-page="./ManageCourse" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-2"></i>Create New
-            Course</a>
+        <a asp-page="./ManageCourses" class="btn btn-primary shadow-sm"><i class="bi bi-gear me-2"></i>Manage My
+            Courses</a>
     </div>
 
     <!-- WEEKLY SCHEDULE GRID -->
@@ -111,8 +111,8 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
                                     class="btn btn-outline-primary btn-sm">Manage Course</a>
                                 <a asp-page="./ViewStudents" asp-route-courseId="@row["Course_Code"]"
                                     class="btn btn-outline-info btn-sm">View Students</a>
-                                <form method="post" asp-page-handler="DeleteCourse" asp-route-id="@row["Course_Code"]" 
-                                      onsubmit="return confirm('Are you sure you want to delete this course?');" class="d-grid">
+                                <form method="post" asp-page-handler="DeleteCourse" asp-route-id="@row["Course_Code"]"
+                                    onsubmit="return confirm('Are you sure you want to delete this course?');" class="d-grid">
                                     <button type="submit" class="btn btn-outline-danger btn-sm">Delete Course</button>
                                 </form>
                             </div>

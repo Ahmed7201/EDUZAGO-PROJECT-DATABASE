@@ -268,13 +268,13 @@ public class DB
     {
         DataTable dt = new DataTable();
 
-        string q = "select  c.Course_Code,c.Title from Course c , Instructor i where c.Instructor_ID = i.@InstructorID and i.Instructor_ID=@InstructorID";
+        string q = "select * from Course where Instructor_ID = @InstructorID";
         SqlCommand cmd = new SqlCommand(q, con);
         cmd.Parameters.AddWithValue("@InstructorID", I.USER_ID);
         try
         {
             con.Open();
-             dt.Load(cmd.ExecuteReader());
+            dt.Load(cmd.ExecuteReader());
         }
         catch (Exception ex)
         {
@@ -554,7 +554,7 @@ public class DB
     public void DeleteCategory(Category c)
     {
         string query = "Delete From Category where Category_ID=@cat_id";
-        SqlCommand cmd= new SqlCommand(query, con);
+        SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@cat_id", c.CategoryID);
         try
         {
@@ -565,9 +565,9 @@ public class DB
         {
             Console.WriteLine(ex.Message);
         }
-        finally 
+        finally
         {
-            con.Close(); 
+            con.Close();
         }
     }
 
@@ -660,7 +660,7 @@ public class DB
         {
             con.Open();
             result = cmd.ExecuteNonQuery();
-           
+
 
         }
         catch (Exception ex)
@@ -677,7 +677,7 @@ public class DB
     public int GETAdminWhoApproved(Instructor I)
     {
         int Admin_ID = 0;
-        DataTable dt=new DataTable();
+        DataTable dt = new DataTable();
         string query = " Select Admin_ID\r\n From INSTRUCTOR I\r\n where I.Approval_Status='Approved' and I.Instructor_ID=@I_id";
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@I_id", I.USER_ID);
@@ -687,7 +687,7 @@ public class DB
             con.Open();
             dt.Load(cmd.ExecuteReader());
             if (dt.Rows.Count > 0)
-            { 
+            {
                 Admin_ID = Convert.ToInt32(dt.Rows[0][0]);
             }
         }

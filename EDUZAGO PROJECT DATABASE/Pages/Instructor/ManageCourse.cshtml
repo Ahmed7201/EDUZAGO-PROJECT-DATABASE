@@ -15,7 +15,7 @@
                 <div class="form-group mb-3">
                     <label asp-for="Course.CourseCode" class="control-label">Course Code</label>
                     <input asp-for="Course.CourseCode" class="form-control"
-                        readonly="@(!string.IsNullOrEmpty(Model.Course.CourseCode))" />
+                        readonly="@(string.IsNullOrEmpty(Model.Course.CourseCode) ? null : "readonly")" />
                     <span asp-validation-for="Course.CourseCode" class="text-danger"></span>
                 </div>
 
