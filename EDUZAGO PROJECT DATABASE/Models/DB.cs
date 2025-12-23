@@ -268,7 +268,7 @@ public class DB
     {
         DataTable dt = new DataTable();
 
-        string q = "select  c.Course_Code,c.Title from Course c , Instructor i where c.Instructor_ID = i.@InstructorID";
+        string q = "select  c.Course_Code,c.Title from Course c , Instructor i where c.Instructor_ID = i.@InstructorID and i.Instructor_ID=@InstructorID";
         SqlCommand cmd = new SqlCommand(q, con);
         cmd.Parameters.AddWithValue("@InstructorID", I.USER_ID);
         try
