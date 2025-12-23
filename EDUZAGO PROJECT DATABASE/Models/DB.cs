@@ -472,6 +472,78 @@ public class DB
             con.Close();
         }
     }
+
+    public Course GetCourse(string courseCode)
+    {
+        Course c = new Course();
+        string query = "SELECT * FROM Course WHERE Course_Code = @cc";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            con.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                c.CourseCode = reader["Course_Code"].ToString();
+                c.Title = reader["Title"].ToString();
+                c.Description = reader["Description"].ToString();
+                // We'd ideally fetch Instructor name too via join, keeping it simple for now or adding another query if strictly needed.
+                // Assuming Instructor_ID is in Course table based on DB.AddCourse structure (though it had typos in AddCourse args).
+                // Let's stick to reading available columns.
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return c;
+    }
+
+    public DataTable GetStudentsWithGrades(string courseCode)
+    {
+        DataTable dt = new DataTable();
+        // Join Student, Grade, and User (for email/name)
+        // Assuming Grade table has Student_ID and Course_Code
+        // And Student_ID matches User_ID for Name/Email as per GetAllStudents
+        string query = @"
+            SELECT S.Student_ID, U.Name, U.Email, G.CompletionStatus, G.Progress, G.GradeID
+            FROM Student S
+            JOIN [User] U ON S.Student_ID = U.User_ID
+            LEFT JOIN Grade G ON S.Student_ID = G.Student_ID AND G.Course_Code = @cc
+            WHERE G.Course_Code = @cc OR G.Course_Code IS NULL"; 
+            // This query might return all students if we don't filter properly. 
+            // Better: Get grades for this course, join with student info.
+        
+        string betterQuery = @"
+            SELECT G.GradeID, S.Student_ID, U.Name, U.Email, G.CompletionStatus, G.Progress
+            FROM Grade G
+            JOIN Student S ON G.Student_ID = S.Student_ID
+            JOIN [User] U ON S.Student_ID = U.User_ID
+            WHERE G.Course_Code = @cc";
+
+        SqlCommand cmd = new SqlCommand(betterQuery, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+}
 }
 
     public DataTable GetResources(string courseCode)
