@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EDUZAGO_PROJECT_DATABASE.Models
 {
@@ -9,6 +10,10 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         public string Bio { get; set; } = string.Empty;
 
         // Keeping IsApproved as an inferred requirement for system management, though not explicitly in text schema
-        public string IsApproved { get; set; } = "Pending";
+        public string Approval_Status { get; set; } = "pending";
+
+        public int Admin_ID { get; set; }
+        [ForeignKey("Admin_ID")]
+        public required Admin Admin { get; set; }
     }
 }

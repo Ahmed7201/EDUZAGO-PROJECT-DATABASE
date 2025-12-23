@@ -553,6 +553,25 @@ public class DB
             con.Close();
         }
     }
+    public void DeleteCategory(Category c)
+    {
+        string query = "Delete From Category where Category_ID=@cat_id";
+        SqlCommand cmd= new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cat_id", c.CategoryID);
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally 
+        {
+            con.Close(); 
+        }
+    }
 
     public DataTable GetStudentsForCourse(string courseCode)
     {
@@ -612,4 +631,80 @@ public class DB
         }
         return c;
     }
+    public int Approve_Instructor(Instructor I)
+    {
+        int result = 0;
+        string query = $"Update Instructor Set Approval_Status='{I.Approval_Status = "Approved"} where Instructor_ID={I.USER_ID}";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            result = cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return result;
+    }
+    public int Donot_Approve_Instructor(Instructor I)
+    {
+        int result = 0;
+        string query = $"Update Instructor Set Approval_Status='{I.Approval_Status = "Rejected"} where Instructor_ID={I.USER_ID}";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            result = cmd.ExecuteNonQuery();
+           
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return result;
+
+    }
+    public int GETAdminWhoApproved(Instructor I)
+    {
+        int Admin_ID = 0;
+        DataTable dt=new DataTable();
+        string query = " Select Admin_ID\r\n From INSTRUCTOR I\r\n where I.Approval_Status='Approved' and I.Instructor_ID=@I_id";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@I_id", I.USER_ID);
+
+        try
+        {
+            con.Open();
+            dt.Load(cmd.ExecuteReader());
+            if (dt.Rows.Count > 0)
+            { 
+                Admin_ID = Convert.ToInt32(dt.Rows[0][0]);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return Admin_ID;
+
+    }
+
+
 }
+

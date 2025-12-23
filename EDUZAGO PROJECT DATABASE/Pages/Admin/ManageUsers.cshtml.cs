@@ -7,10 +7,16 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
 {
     public class ManageUsersModel : PageModel
     {
+        [BindProperty]
+        public EDUZAGO_PROJECT_DATABASE.Models.Instructor instructor {  get; set; }
+
+        [BindProperty]
+        public string errror_msg { get; set; }
         public DB db { get; set; }
 
         public DataTable instructor_table { get; set; } = new DataTable();
         public DataTable student_table { get; set; } = new DataTable();
+        
         public ManageUsersModel(DB d)
         {
             db = d;
@@ -28,9 +34,19 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             return Page();
         }
 
-        public IActionResult OnPostApprove(int id)
+        public IActionResult OnPostApprove()
         {
-            return RedirectToPage();
+            if(db.Approve_Instructor(instructor)==1)
+            {
+                return Page();
+            }
+            else
+            {
+                errror_msg = "The approve operation was not succesfull";
+                return Page();
+            }
+
+               
         }
 
         public IActionResult OnPostDeleteInstructor(int id)
