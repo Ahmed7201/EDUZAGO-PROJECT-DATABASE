@@ -41,7 +41,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             CurrentInstructor.Name = HttpContext.Session.GetString("UserName") ?? "Instructor";
 
             // Use the object's ID to fetch courses
-            MyCourses = db.GetInstructorCourses(CurrentInstructor.USER_ID);
+            MyCourses = db.GetInstructorCourses(CurrentInstructor);
 
             // Mock schedule for display (as DB doesn't have an aggregated schedule query yet)
             WeeklySchedule = new List<AggregatedScheduleItem>

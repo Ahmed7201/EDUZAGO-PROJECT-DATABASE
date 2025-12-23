@@ -264,18 +264,17 @@ public class DB
         return dt;
     }
 
-    public DataTable GetInstructorCourses(int instructor_id)
+    public DataTable GetInstructorCourses(Instructor I)
     {
         DataTable dt = new DataTable();
 
-        string q = "select  c.Course_Code,c.Title from course c , iNSTRUCTOR i where c.Instructor_ID = i.@InstructorID";
+        string q = "select  c.Course_Code,c.Title from Course c , Instructor i where c.Instructor_ID = i.@InstructorID";
         SqlCommand cmd = new SqlCommand(q, con);
-        cmd.Parameters.AddWithValue("@InstructorID", instructor_id);
+        cmd.Parameters.AddWithValue("@InstructorID", I.USER_ID);
         try
         {
             con.Open();
-            
-            dt.Load(cmd.ExecuteReader());
+             dt.Load(cmd.ExecuteReader());
         }
         catch (Exception ex)
         {
