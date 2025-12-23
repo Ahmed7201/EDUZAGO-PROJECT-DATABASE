@@ -105,7 +105,8 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
                         <div class="card-body">
                             <h5 class="card-title text-primary">@row["Title"]</h5>
                             <h6 class="card-subtitle mb-2 text-muted">@row["Course_Code"]</h6>
-                            <p class="card-text text-muted small">Duration: @row["Duration"]</p>
+                            <p class="card-text text-muted small">Duration: @(row.Table.Columns.Contains("Duration") ?
+                        row["Duration"] : "N/A")</p>
                             <div class="d-grid gap-2">
                                 <a asp-page="./ManageCourse" asp-route-id="@row["Course_Code"]"
                                     class="btn btn-outline-primary btn-sm">Manage Course</a>
