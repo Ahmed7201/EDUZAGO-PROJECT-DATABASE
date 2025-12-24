@@ -37,7 +37,7 @@
                 string duration = row["Duration"] != DBNull.Value ? row["Duration"].ToString() : "N/A";
                 // Handle Fees safely - could be DBNull or different numeric types
                 string fees = "0.00";
-                if (row.Table.Columns.Contains("Fees") && row["Fees"] != DBNull.Value)
+                if (row["Fees"] != DBNull.Value)
                 {
                     fees = Convert.ToDecimal(row["Fees"]).ToString("F2");
                 }
