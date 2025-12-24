@@ -30,7 +30,8 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
 
         public IActionResult OnPostAdd()
         {
-            return RedirectToPage();
+            db.AddCategory(NewCategory);
+            return Page();
         }
 
         public IActionResult OnPostDelete(int id)

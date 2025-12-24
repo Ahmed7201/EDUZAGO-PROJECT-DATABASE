@@ -476,7 +476,7 @@ public class DB
 
     public void AddCategory(Category category)
     {
-        string query = "INSERT INTO CATEGORY (Category_ID, Category_Name, Description, Admin_ID) VALUES (@CategoryID, @CategoryName, @Description, @Admin_ID)";
+        string query = "INSERT INTO CATEGORY ( Category_Name, Description) VALUES ( @CategoryName, @Description)";
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@CategoryID", category.CategoryID);
         cmd.Parameters.AddWithValue("@CategoryName", category.CategoryName);
