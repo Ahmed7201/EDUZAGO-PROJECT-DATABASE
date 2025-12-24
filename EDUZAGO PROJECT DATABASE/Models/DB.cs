@@ -123,6 +123,28 @@ public class DB
         }
     }
 
+    public int Get_Pendingcount()
+    {
+        int count = 0;
+        string query = "Select Count(*) From Instructor where Approval_Status Like'Pending'";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            count = (int)cmd.ExecuteScalar();
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        { 
+            con.Close(); 
+        }
+        return count;
+    }
     public int Get_StudentCount()
     {
         int count = 0;
@@ -258,7 +280,7 @@ public class DB
     public DataTable GetAllCourses()
     {
         DataTable dt = new DataTable();
-        string query = "SELECT * FROM Course";
+        string query = "SELECT Course_Code,Title,Category_ID,Fees,Description,Duration FROM Course";
         SqlCommand cmd = new SqlCommand(query, con);
         try
         {
