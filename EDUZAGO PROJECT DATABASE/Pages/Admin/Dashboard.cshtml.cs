@@ -27,7 +27,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             StudentCount = db.Get_StudentCount();
             InstructorCount = db.Get_InstructorCount();
             CourseCount = db.Get_CourseCount();
-            PendingInstructors = 0;
+            PendingInstructors = db.Get_Pendingcount();
 
             return Page();
         }

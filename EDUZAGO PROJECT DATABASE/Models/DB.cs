@@ -123,6 +123,28 @@ public class DB
         }
     }
 
+    public int Get_Pendingcount()
+    {
+        int count = 0;
+        string query = "Select Count(*) From Instructor where Approval_Status Like'Pending'";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        try
+        {
+            con.Open();
+            count = (int)cmd.ExecuteScalar();
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        { 
+            con.Close(); 
+        }
+        return count;
+    }
     public int Get_StudentCount()
     {
         int count = 0;
