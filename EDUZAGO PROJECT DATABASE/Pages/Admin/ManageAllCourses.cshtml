@@ -43,7 +43,16 @@
                             <tr>
                                 <td class="ps-4 fw-bold">@row["Course_Code"]</td>
                                 <td>@row["Title"]</td>
-                                <td>@row["Category_ID"]</td>
+                                <td>
+                                    @if(row.Table.Columns.Contains("Category_ID"))
+                                    {
+                                        @row["Category_ID"]
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger small">Col Missing</span>
+                                    }
+                                </td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group btn-group-sm">
                                         <a asp-page="/Instructor/ManageCourse" asp-route-id="@row["Course_Code"]"
