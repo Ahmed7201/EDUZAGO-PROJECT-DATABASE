@@ -397,6 +397,32 @@ public class DB
         return dt;
     }
 
+    public DataTable GetStudentsForCourse(string courseCode)
+    {
+        DataTable dt = new DataTable();
+        string query = @"SELECT S.Student_ID, U.Name, U.Email, E.Enrollment_Date 
+                         FROM Student S 
+                         JOIN [User] U ON S.Student_ID = U.USER_ID 
+                         JOIN Enrollment E ON S.Student_ID = E.Student_ID 
+                         WHERE E.Course_Code = @cc";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
     public void Addcourse(Course newcourse)
     {
         string q = "Insert into Course (Course_Code , Title, Fees, Description, Duration, Category_ID, Admin_ID, Instructor_ID) Values (@ccode,@title,@fee,@des,@duration,@categoryid,@adminid,@instructorid)";
@@ -681,31 +707,7 @@ public class DB
         }
     }
 
-    public DataTable GetStudentsForCourse(string courseCode)
-    {
-        DataTable dt = new DataTable();
-        string q = @"SELECT S.*, U.Name, U.Email, E.Enrollment_Date 
-                     FROM STUDENT S 
-                     JOIN [USER] U ON S.Student_ID = U.USER_ID
-                     JOIN Enrollment E ON S.Student_ID = E.Student_ID
-                     WHERE E.Course_Code = @ccode";
-        SqlCommand cmd = new SqlCommand(q, con);
-        cmd.Parameters.AddWithValue("@ccode", courseCode);
-        try
-        {
-            con.Open();
-            dt.Load(cmd.ExecuteReader());
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
-            con.Close();
-        }
-        return dt;
-    }
+
 
     public Course GetCourse(string courseCode)
     {

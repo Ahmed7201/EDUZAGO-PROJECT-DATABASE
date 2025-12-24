@@ -14,17 +14,18 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             this.db = db;
         }
 
-        public Course CourseObj { get; set; } = new Course();
-        public DataTable StudentsTable { get; set; } = new DataTable();
+        public string CourseId { get; set; }
+        public DataTable Students { get; set; } = new DataTable();
 
         public IActionResult OnGet(string courseId)
         {
-            var role = HttpContext.Session.GetString("Role");
-            if (role != "Instructor") return RedirectToPage("/Account/Login");
+            if (string.IsNullOrEmpty(courseId))
+            {
+                return RedirectToPage("./Dashboard");
+            }
 
-            // Use DB to get info
-            CourseObj = db.GetCourse(courseId); // Populates basic course info like Title
-            StudentsTable = db.GetStudentsForCourse(courseId); // Returns DataTable of students
+            CourseId = courseId;
+            Students = db.GetStudentsForCourse(courseId);
 
             return Page();
         }

@@ -69,6 +69,9 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
                                             <li><a class="dropdown-item" asp-page="./ManageCourse"
                                                     asp-route-id="@slot.CourseCode"><i class="bi bi-pencil me-2"></i>Edit
                                                     Course</a></li>
+                                            <li><a class="dropdown-item" asp-page="./ViewStudents"
+                                                    asp-route-courseId="@slot.CourseCode"><i
+                                                        class="bi bi-people me-2"></i>View Students</a></li>
                                             <li><a class="dropdown-item" asp-page="./ManageResources"
                                                     asp-route-courseId="@slot.CourseCode"><i
                                                         class="bi bi-folder2-open me-2"></i>Resources</a></li>
