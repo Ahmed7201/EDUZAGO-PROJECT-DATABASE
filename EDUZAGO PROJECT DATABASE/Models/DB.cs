@@ -280,7 +280,7 @@ public class DB
     public DataTable GetAllCourses()
     {
         DataTable dt = new DataTable();
-        string query = "SELECT * FROM Course";
+        string query = "SELECT Course_Code,Title,Category_ID,Fees,Description,Duration FROM Course";
         SqlCommand cmd = new SqlCommand(query, con);
         try
         {
