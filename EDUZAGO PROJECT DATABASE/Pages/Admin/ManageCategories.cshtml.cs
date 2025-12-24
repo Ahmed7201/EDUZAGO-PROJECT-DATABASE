@@ -24,18 +24,28 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             if (role != "Admin") return RedirectToPage("/Account/Login");
 
             Category_table = db.GetAllCategories();
-           
+
             return Page();
         }
 
         public IActionResult OnPostAdd()
         {
+            var adminId = HttpContext.Session.GetString("UserId");
+            if (!string.IsNullOrEmpty(adminId))
+            {
+                NewCategory.Admin_ID = int.Parse(adminId);
+            }
+            if (NewCategory.Admin_ID == 0) NewCategory.Admin_ID = 4; // Fallback to ensure FK constraint met
+
             db.AddCategory(NewCategory);
-            return Page();
+            return RedirectToPage();
         }
 
         public IActionResult OnPostDelete(int id)
         {
+            Category c = new Category();
+            c.CategoryID = id;
+            db.DeleteCategory(c);
             return RedirectToPage();
         }
     }

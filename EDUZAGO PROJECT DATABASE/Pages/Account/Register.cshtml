@@ -31,6 +31,14 @@
                     <span asp-validation-for="Input.Password" class="text-danger small"></span>
                 </div>
 
+                <div class="form-floating mb-3">
+                    <select asp-for="Input.Role" class="form-select">
+                        <option value="Student">Student</option>
+                        <option value="Instructor">Instructor</option>
+                    </select>
+                    <label asp-for="Input.Role">Account Type</label>
+                </div>
+
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary btn-lg fw-bold">Register</button>
                 </div>

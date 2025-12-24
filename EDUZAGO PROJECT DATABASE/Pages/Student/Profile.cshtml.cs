@@ -6,30 +6,30 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
 {
     public class ProfileModel : PageModel
     {
+        private readonly DB db;
+        public ProfileModel(DB db) { this.db = db; }
+
         [BindProperty]
         public EDUZAGO_PROJECT_DATABASE.Models.Student MockStudent { get; set; } = new EDUZAGO_PROJECT_DATABASE.Models.Student();
 
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("Role");
-            if (role != "Student") return RedirectToPage("/Account/Login");
+            var userId = HttpContext.Session.GetString("UserId");
+            if (role != "Student" || string.IsNullOrEmpty(userId)) return RedirectToPage("/Account/Login");
 
-            // Mock Data
-            MockStudent = new EDUZAGO_PROJECT_DATABASE.Models.Student
-            {
-                Name = "Mock Student",
-                Email = "s-user@eduzago.com",
-                PhoneNumber = "123-456-7890",
-                Address = "123 University Ave"
-            };
-
+            MockStudent = db.GetStudentProfile(int.Parse(userId));
             return Page();
         }
 
         public IActionResult OnPost()
         {
-            // Mock Save
-            return RedirectToPage("./Dashboard");
+            var userId = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userId)) return RedirectToPage("/Account/Login");
+
+            MockStudent.USER_ID = int.Parse(userId);
+            db.UpdateStudentProfile(MockStudent);
+            return RedirectToPage();
         }
     }
 }

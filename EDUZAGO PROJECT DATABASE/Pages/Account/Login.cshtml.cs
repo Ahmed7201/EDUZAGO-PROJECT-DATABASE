@@ -44,6 +44,19 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.Account
             if (user != null)
             {
                 // Login successful
+                if (user.Role == "Instructor")
+                {
+                    // Basic normalization if needed, or straight comparison
+                    string status = user.ApprovalStatus?.ToLower() ?? "pending";
+                    if (status != "approved")
+                    {
+                        // Redirect to Pending page (which we will update to handle 'rejected' too)
+                        // Do NOT set session
+                        return RedirectToPage("./InstructorPending", new { status = status });
+                    }
+                }
+
+                // Login successful - Set Session ONLY if allowed
                 HttpContext.Session.SetString("UserId", user.USER_ID.ToString());
                 HttpContext.Session.SetString("UserName", user.Name);
                 HttpContext.Session.SetString("Role", user.Role);

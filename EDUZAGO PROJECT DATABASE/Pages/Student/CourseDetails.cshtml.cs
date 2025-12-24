@@ -25,15 +25,17 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
         {
             Course = db.GetCourse(courseId);
             if (string.IsNullOrEmpty(Course.Title)) Course.Title = courseId;
-            if (Course.Instructor == null) Course.Instructor = new EDUZAGO_PROJECT_DATABASE.Models.Instructor { Name = "TBD" };
+            if (string.IsNullOrEmpty(Course.Title)) Course.Title = courseId;
+            // Removed TBD fallback - Instructor Name is now fetched from DB
+            if (Course.Instructor == null) Course.Instructor = new EDUZAGO_PROJECT_DATABASE.Models.Instructor { Name = "Unknown" };
 
             DataTable dtRes = db.GetResources(courseId);
             foreach (DataRow row in dtRes.Rows)
             {
                 Resources.Add(new EDUZAGO_PROJECT_DATABASE.Models.Resource
                 {
-                    ResourceID = Convert.ToInt32(row["ResourceID"]),
-                    ResourceType = row["ResourceType"].ToString(),
+                    ResourceID = Convert.ToInt32(row["Resource_ID"]),
+                    ResourceType = row["Resource_Type"].ToString(),
                     URL = row["URL"].ToString(),
                     Course_Code = row["Course_Code"].ToString(),
                     Instructor_ID = Convert.ToInt32(row["Instructor_ID"])
@@ -45,9 +47,9 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             {
                 Schedules.Add(new EDUZAGO_PROJECT_DATABASE.Models.Schedule
                 {
-                    ScheduleID = Convert.ToInt32(row["ScheduleID"]),
-                    SessionTime = Convert.ToDateTime(row["SessionTime"]),
-                    SessionDetails = row["SessionDetails"].ToString(),
+                    ScheduleID = Convert.ToInt32(row["Schedule_ID"]),
+                    SessionTime = Convert.ToDateTime(row["Session_Time"]),
+                    SessionDetails = row["Session_Details"].ToString(),
                     Course_Code = row["Course_Code"].ToString(),
                     Instructor_ID = Convert.ToInt32(row["Instructor_ID"])
                 });
@@ -57,7 +59,15 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
         public IActionResult OnPostReview(string courseId)
         {
             NewReview.Course_Code = courseId;
-            NewReview.Student_ID = 1;
+            var userId = HttpContext.Session.GetString("UserId");
+            if (!string.IsNullOrEmpty(userId))
+            {
+                NewReview.Student_ID = int.Parse(userId);
+            }
+            else
+            {
+                return RedirectToPage("/Account/Login");
+            }
 
             db.AddReview(NewReview);
             return RedirectToPage(new { courseId = courseId });

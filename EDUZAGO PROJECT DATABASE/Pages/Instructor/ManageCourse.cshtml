@@ -49,7 +49,17 @@
 
                 <div class="form-group">
                     <input type="submit" value="Save" class="btn btn-primary" />
-                    <a asp-page="./Dashboard" class="btn btn-secondary">Cancel</a>
+                    @{
+                        var role = HttpContext.Session.GetString("Role");
+                        if (role == "Admin")
+                        {
+                             <a asp-page="/Admin/ManageAllCourses" class="btn btn-secondary">Cancel</a>
+                        }
+                        else
+                        {
+                             <a asp-page="./Dashboard" class="btn btn-secondary">Cancel</a>
+                        }
+                    }
                 </div>
             </form>
         </div>

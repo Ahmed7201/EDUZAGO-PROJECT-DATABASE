@@ -52,28 +52,52 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
 
         public IActionResult OnPost()
         {
-            // Directly assign the Instructor ID from session to the Course object
-            Course.Instructor_ID = Convert.ToInt32(HttpContext.Session.GetString("UserId"));
-
-            // Get the Admin who approved this instructor to link them to the course
-
-            instructor.USER_ID = Course.Instructor_ID;
-            Course.Admin_ID = db.GETAdminWhoApproved(instructor);
-            if (Course.Admin_ID == 0) Course.Admin_ID = 1;
+            var role = HttpContext.Session.GetString("Role");
+            var userId = Convert.ToInt32(HttpContext.Session.GetString("UserId"));
 
             // Check if course exists to decide Add or Update
             Course existing = db.GetCourse(Course.CourseCode);
-            if (!string.IsNullOrEmpty(existing.CourseCode) && !string.IsNullOrEmpty(existing.Title))
+            bool isUpdate = !string.IsNullOrEmpty(existing.CourseCode);
+
+            if (role == "Instructor")
             {
-                // Update if found
+                // Instructors can only add/edit their own courses
+                Course.Instructor_ID = userId;
+                instructor.USER_ID = userId;
+                Course.Admin_ID = db.GETAdminWhoApproved(instructor);
+            }
+            else if (role == "Admin")
+            {
+                // Admins editing: Preserve existing Instructor_ID for updates
+                if (isUpdate)
+                {
+                    Course.Instructor_ID = existing.Instructor_ID;
+                    Course.Admin_ID = existing.Admin_ID; // Preserve original admin or set to current admin? Let's preserve.
+                }
+                else
+                {
+                    // Admin creating new course? Logic is tricky as Instructor_ID is required.
+                    // For now, assume Admin assigns a default instructor or themselves if they are also instructor (unlikely).
+                    // This is a business logic gap. We'll set a default generic instructor ID (e.g. 1) if creating new, 
+                    // BUT heavily warn user or let them pick (UI doesn't support picking yet).
+                    // BETTER: If Admin edits, we just keep existing. If Admin creates, we fallback to 1 (system instructor).
+                    Course.Instructor_ID = 1;
+                    Course.Admin_ID = userId;
+                }
+            }
+
+            if (Course.Admin_ID == 0) Course.Admin_ID = 4; // Use a valid Admin ID fallback
+
+            if (isUpdate)
+            {
                 db.UpdateCourse(Course);
             }
             else
             {
-                // Add if new
                 db.Addcourse(Course);
             }
 
+            if (role == "Admin") return RedirectToPage("/Admin/ManageAllCourses");
             return RedirectToPage("./Dashboard");
         }
     }

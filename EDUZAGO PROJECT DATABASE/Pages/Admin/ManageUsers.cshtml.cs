@@ -8,7 +8,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
     public class ManageUsersModel : PageModel
     {
         [BindProperty]
-        public EDUZAGO_PROJECT_DATABASE.Models.Instructor instructor {  get; set; }
+        public EDUZAGO_PROJECT_DATABASE.Models.Instructor instructor { get; set; }
 
         [BindProperty]
         public string errror_msg { get; set; }
@@ -16,7 +16,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
 
         public DataTable instructor_table { get; set; } = new DataTable();
         public DataTable student_table { get; set; } = new DataTable();
-        
+
         public ManageUsersModel(DB d)
         {
             db = d;
@@ -34,28 +34,39 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             return Page();
         }
 
-        public IActionResult OnPostApprove()
-        {
-            if(db.Approve_Instructor(instructor)==1)
-            {
-                return Page();
-            }
-            else
-            {
-                errror_msg = "The approve operation was not succesfull";
-                return Page();
-            }
 
-               
+
+        public IActionResult OnPostApprove(int id)
+        {
+            EDUZAGO_PROJECT_DATABASE.Models.Instructor i = new EDUZAGO_PROJECT_DATABASE.Models.Instructor();
+            i.USER_ID = id;
+            // Approve
+            db.Approve_Instructor(i);
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostReject(int id)
+        {
+            EDUZAGO_PROJECT_DATABASE.Models.Instructor i = new EDUZAGO_PROJECT_DATABASE.Models.Instructor();
+            i.USER_ID = id;
+            // Reject
+            db.Donot_Approve_Instructor(i);
+            return RedirectToPage();
         }
 
         public IActionResult OnPostDeleteInstructor(int id)
         {
+            EDUZAGO_PROJECT_DATABASE.Models.Instructor i = new EDUZAGO_PROJECT_DATABASE.Models.Instructor();
+            i.USER_ID = id;
+            db.DeleteInstructor(i);
             return RedirectToPage();
         }
 
         public IActionResult OnPostDeleteStudent(int id)
         {
+            EDUZAGO_PROJECT_DATABASE.Models.Student s = new EDUZAGO_PROJECT_DATABASE.Models.Student();
+            s.USER_ID = id;
+            db.DeleteStudent(s);
             return RedirectToPage();
         }
     }

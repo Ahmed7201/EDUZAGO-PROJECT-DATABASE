@@ -14,22 +14,22 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         [BindProperty]
         public EDUZAGO_PROJECT_DATABASE.Models.Resource NewResource { get; set; } = new EDUZAGO_PROJECT_DATABASE.Models.Resource();
 
-        public ManageResourcesModel()
+        public ManageResourcesModel(DB d)
         {
-            db = new DB();
+            db = d;
         }
 
         public void OnGet(string courseId)
         {
             CourseTitle = db.GetCourse(courseId).Title;
-            if(string.IsNullOrEmpty(CourseTitle)) CourseTitle = courseId;
+            if (string.IsNullOrEmpty(CourseTitle)) CourseTitle = courseId;
             DataTable dt = db.GetResources(courseId);
             foreach (DataRow row in dt.Rows)
             {
                 Resources.Add(new EDUZAGO_PROJECT_DATABASE.Models.Resource
                 {
-                    ResourceID = Convert.ToInt32(row["ResourceID"]),
-                    ResourceType = row["ResourceType"].ToString(),
+                    ResourceID = Convert.ToInt32(row["Resource_ID"]),
+                    ResourceType = row["Resource_Type"].ToString(),
                     URL = row["URL"].ToString(),
                     Course_Code = row["Course_Code"].ToString(),
                     Instructor_ID = Convert.ToInt32(row["Instructor_ID"])
@@ -40,7 +40,15 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
         public IActionResult OnPostAdd(string courseId)
         {
             NewResource.Course_Code = courseId;
-            NewResource.Instructor_ID = 1; 
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!string.IsNullOrEmpty(userIdStr))
+            {
+                NewResource.Instructor_ID = int.Parse(userIdStr);
+            }
+            else
+            {
+                NewResource.Instructor_ID = 1; // Fallback or handle error
+            }
 
             db.AddResource(NewResource);
             return RedirectToPage(new { courseId = courseId });

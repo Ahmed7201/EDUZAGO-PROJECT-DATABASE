@@ -6,7 +6,7 @@ using System.Data;
 
 public class DB
 {
-    private string connectionstring = "Data Source=ABDULLAH-LAPTOP;Initial Catalog=EDUZAGO_DB;Integrated Security=True;Trust Server Certificate=True;MultipleActiveResultSets=True";
+    private string connectionstring = "Data Source=DESKTOP-SQFUII7;Initial Catalog=DB_EDUZAGO;Integrated Security=True;Trust Server Certificate=True;MultipleActiveResultSets=True";
     public SqlConnection con { get; set; }
 
     public DB()
@@ -62,11 +62,13 @@ public class DB
                 }
 
                 // Check Instructor
-                roleCmd = new SqlCommand("SELECT COUNT(*) FROM Instructor WHERE Instructor_ID = @uid", con);
+                roleCmd = new SqlCommand("SELECT Approval_Status FROM Instructor WHERE Instructor_ID = @uid", con);
                 roleCmd.Parameters.AddWithValue("@uid", userId);
-                if ((int)roleCmd.ExecuteScalar() > 0)
+                var statusObj = roleCmd.ExecuteScalar();
+                if (statusObj != null)
                 {
                     user.Role = "Instructor";
+                    user.ApprovalStatus = statusObj.ToString();
                     return user;
                 }
 
@@ -97,19 +99,44 @@ public class DB
         }
     }
 
-    // Register a new user
-    public bool RegisterUser(string name, string email, string password)
+    // Register a new user with Role handling
+    public bool RegisterUser(string name, string email, string password, string role)
     {
-        string query = "INSERT INTO [User] (Name, Email, Password) VALUES (@name, @email, @password)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@name", name);
-        cmd.Parameters.AddWithValue("@email", email);
-        cmd.Parameters.AddWithValue("@password", password);
-
         try
         {
             if (con.State != ConnectionState.Open) con.Open();
+
+            // 1. Get Next ID (Since USER_ID is not Identity)
+            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(USER_ID), 0) + 1 FROM [User]", con);
+            int newUserId = (int)cmdId.ExecuteScalar();
+
+            // 2. Insert into [User]
+            string queryUser = "INSERT INTO [User] (USER_ID, Name, Email, Password) VALUES (@uid, @name, @email, @password)";
+            SqlCommand cmd = new SqlCommand(queryUser, con);
+            cmd.Parameters.AddWithValue("@uid", newUserId);
+            cmd.Parameters.AddWithValue("@name", name);
+            cmd.Parameters.AddWithValue("@email", email);
+            cmd.Parameters.AddWithValue("@password", password);
             cmd.ExecuteNonQuery();
+
+            // 3. Insert into Role Table
+            if (role == "Student")
+            {
+                // Insert into STUDENT with empty defaults
+                string queryStudent = "INSERT INTO Student (Student_ID, Address, Phone_Number) VALUES (@uid, 'Unknown', 'Unknown')";
+                SqlCommand cmdStudent = new SqlCommand(queryStudent, con);
+                cmdStudent.Parameters.AddWithValue("@uid", newUserId);
+                cmdStudent.ExecuteNonQuery();
+            }
+            else if (role == "Instructor")
+            {
+                // Insert into INSTRUCTOR with Pending status and Default Admin ID (4)
+                string queryInstructor = "INSERT INTO Instructor (Instructor_ID, Bio, Expertise, Approval_Status, Admin_ID) VALUES (@uid, 'Bio Pending', 'Expertise Pending', 'Pending', 4)";
+                SqlCommand cmdInstructor = new SqlCommand(queryInstructor, con);
+                cmdInstructor.Parameters.AddWithValue("@uid", newUserId);
+                cmdInstructor.ExecuteNonQuery();
+            }
+
             return true;
         }
         catch (Exception ex)
@@ -140,8 +167,8 @@ public class DB
             Console.WriteLine(ex.Message);
         }
         finally
-        { 
-            con.Close(); 
+        {
+            con.Close();
         }
         return count;
     }
@@ -241,7 +268,7 @@ public class DB
 
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
             dt.Load(cmd.ExecuteReader());
         }
         catch (Exception ex)
@@ -254,6 +281,106 @@ public class DB
             con.Close();
         }
         return dt;
+    }
+
+    // Profile Methods
+    public Student GetStudentProfile(int userId)
+    {
+        Student s = new Student();
+        string query = "SELECT U.Name, U.Email, S.Phone_Number, S.Address FROM Student S JOIN [User] U ON S.Student_ID = U.USER_ID WHERE S.Student_ID = @uid";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@uid", userId);
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            SqlDataReader r = cmd.ExecuteReader();
+            if (r.Read())
+            {
+                s.USER_ID = userId;
+                s.Name = r["Name"].ToString();
+                s.Email = r["Email"].ToString();
+                s.PhoneNumber = r["Phone_Number"] != DBNull.Value ? r["Phone_Number"].ToString() : "";
+                s.Address = r["Address"] != DBNull.Value ? r["Address"].ToString() : "";
+            }
+            r.Close();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return s;
+    }
+
+    public void UpdateStudentProfile(Student s)
+    {
+        // Update User (Name) and Student (Phone, Address)
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            // Update User Table
+            string q1 = "UPDATE [User] SET Name = @name WHERE USER_ID = @uid";
+            SqlCommand cmd1 = new SqlCommand(q1, con);
+            cmd1.Parameters.AddWithValue("@name", s.Name);
+            cmd1.Parameters.AddWithValue("@uid", s.USER_ID);
+            cmd1.ExecuteNonQuery();
+
+            // Update Student Table
+            string q2 = "UPDATE Student SET Phone_Number = @phone, Address = @addr WHERE Student_ID = @uid";
+            SqlCommand cmd2 = new SqlCommand(q2, con);
+            cmd2.Parameters.AddWithValue("@phone", s.PhoneNumber);
+            cmd2.Parameters.AddWithValue("@addr", s.Address);
+            cmd2.Parameters.AddWithValue("@uid", s.USER_ID);
+            cmd2.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+
+    public Instructor GetInstructorProfile(int userId)
+    {
+        Instructor i = new Instructor();
+        string query = "SELECT U.Name, U.Email, I.Bio, I.Expertise FROM Instructor I JOIN [User] U ON I.Instructor_ID = U.USER_ID WHERE I.Instructor_ID = @uid";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@uid", userId);
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            SqlDataReader r = cmd.ExecuteReader();
+            if (r.Read())
+            {
+                i.USER_ID = userId;
+                i.Name = r["Name"].ToString();
+                i.Email = r["Email"].ToString();
+                i.Bio = r["Bio"] != DBNull.Value ? r["Bio"].ToString() : "";
+                i.Expertise = r["Expertise"] != DBNull.Value ? r["Expertise"].ToString() : "";
+            }
+            r.Close();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return i;
+    }
+
+    public void UpdateInstructorProfile(Instructor i)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            // Update User Table
+            string q1 = "UPDATE [User] SET Name = @name WHERE USER_ID = @uid";
+            SqlCommand cmd1 = new SqlCommand(q1, con);
+            cmd1.Parameters.AddWithValue("@name", i.Name);
+            cmd1.Parameters.AddWithValue("@uid", i.USER_ID);
+            cmd1.ExecuteNonQuery();
+
+            // Update Instructor Table
+            string q2 = "UPDATE Instructor SET Bio = @bio, Expertise = @expert WHERE Instructor_ID = @uid";
+            SqlCommand cmd2 = new SqlCommand(q2, con);
+            cmd2.Parameters.AddWithValue("@bio", i.Bio);
+            cmd2.Parameters.AddWithValue("@expert", i.Expertise);
+            cmd2.Parameters.AddWithValue("@uid", i.USER_ID);
+            cmd2.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
     }
 
     public DataTable GetAllCategories()
@@ -280,7 +407,10 @@ public class DB
     public DataTable GetAllCourses()
     {
         DataTable dt = new DataTable();
-        string query = "SELECT Course_Code,Title,Category_ID,Fees,Description,Duration FROM Course";
+        string query = @"SELECT C.Course_Code, C.Title, C.Category_ID, C.Fees, C.Description, C.Duration, U.Name AS InstructorName 
+                         FROM Course C 
+                         LEFT JOIN Instructor I ON C.Instructor_ID = I.Instructor_ID 
+                         LEFT JOIN [User] U ON I.Instructor_ID = U.USER_ID";
         SqlCommand cmd = new SqlCommand(query, con);
         try
         {
@@ -302,8 +432,11 @@ public class DB
     {
         DataTable dt = new DataTable();
 
-        string query = @"SELECT * FROM COURSE
-                 WHERE Title LIKE @search";
+        string query = @"SELECT C.*, U.Name AS InstructorName 
+                 FROM COURSE C 
+                 LEFT JOIN Instructor I ON C.Instructor_ID = I.Instructor_ID 
+                 LEFT JOIN [User] U ON I.Instructor_ID = U.USER_ID 
+                 WHERE C.Title LIKE @search";
 
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@search", "%" + searchText + "%");
@@ -349,15 +482,37 @@ public class DB
 
     public void EnrollStudent(int StudentId, string CourseCode)
     {
-        string query = "INSERT INTO Enrollment(Student_ID,Course_Code,Enrollment_Date) VALUES (@sid, @cc, @edate)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@sid", StudentId);
-        cmd.Parameters.AddWithValue("@cc", CourseCode);
-        cmd.Parameters.AddWithValue("@edate", DateTime.Now);
+        // Check if already enrolled to prevent PK violation
+        string checkQuery = "SELECT COUNT(*) FROM Enrollment WHERE Student_ID = @sid AND Course_Code = @cc";
+        SqlCommand checkCmd = new SqlCommand(checkQuery, con);
+        checkCmd.Parameters.AddWithValue("@sid", StudentId);
+        checkCmd.Parameters.AddWithValue("@cc", CourseCode);
+
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
+            int count = (int)checkCmd.ExecuteScalar();
+            if (count > 0) return; // Already enrolled
+
+            // 1. Insert into Enrollment
+            string query = "INSERT INTO Enrollment(Student_ID,Course_Code,Enrollment_Date) VALUES (@sid, @cc, @edate)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", StudentId);
+            cmd.Parameters.AddWithValue("@cc", CourseCode);
+            cmd.Parameters.AddWithValue("@edate", DateTime.Now);
             cmd.ExecuteNonQuery();
+
+            // 2. Initialize Grade Record (So Instructor can see them)
+            // Manual Grade_ID generation
+            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(Grade_ID), 0) + 1 FROM Grade", con);
+            int newGradeId = (int)cmdId.ExecuteScalar();
+
+            string gradeQuery = "INSERT INTO Grade(Grade_ID, Student_ID, Course_Code, Completion_Status, Progress) VALUES (@gid, @sid, @cc, 'In Progress', '0%')";
+            SqlCommand gradeCmd = new SqlCommand(gradeQuery, con);
+            gradeCmd.Parameters.AddWithValue("@gid", newGradeId);
+            gradeCmd.Parameters.AddWithValue("@sid", StudentId);
+            gradeCmd.Parameters.AddWithValue("@cc", CourseCode);
+            gradeCmd.ExecuteNonQuery();
         }
         catch (Exception ex)
         {
@@ -373,9 +528,11 @@ public class DB
     {
         DataTable dt = new DataTable();
 
+        // Fix: Added missing JOIN to Enrollment table
         string query = @"SELECT C.*, E.Enrollment_Date
                  FROM COURSE C
-                 WHERE C.Course_Code = E.Course_Code AND E.Student_ID = @sid";
+                 JOIN Enrollment E ON C.Course_Code = E.Course_Code
+                 WHERE E.Student_ID = @sid";
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@sid", StudentId);
         try
@@ -476,16 +633,25 @@ public class DB
 
     public void AddCategory(Category category)
     {
-        string query = "INSERT INTO CATEGORY ( Category_Name, Description) VALUES ( @CategoryName, @Description)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@CategoryID", category.CategoryID);
-        cmd.Parameters.AddWithValue("@CategoryName", category.CategoryName);
-        cmd.Parameters.AddWithValue("@Description", category.Description);
-        cmd.Parameters.AddWithValue("@Admin_ID", category.Admin_ID);
-
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Check duplicate name
+            SqlCommand chk = new SqlCommand("SELECT Count(*) From Category Where Category_Name=@cn", con);
+            chk.Parameters.AddWithValue("@cn", category.CategoryName);
+            if ((int)chk.ExecuteScalar() > 0) return;
+
+            // Manual ID Generation
+            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(Category_ID), 0) + 1 FROM Category", con);
+            int newId = (int)cmdId.ExecuteScalar();
+
+            string query = "INSERT INTO CATEGORY (Category_ID, Category_Name, Description, Admin_ID) VALUES (@CategoryID, @CategoryName, @Description, @Admin_ID)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@CategoryID", newId);
+            cmd.Parameters.AddWithValue("@CategoryName", category.CategoryName);
+            cmd.Parameters.AddWithValue("@Description", category.Description);
+            cmd.Parameters.AddWithValue("@Admin_ID", category.Admin_ID);
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -522,15 +688,21 @@ public class DB
 
     public void AddResource(Resource resource)
     {
-        string query = "INSERT INTO Resource (ResourceType, URL, Course_Code, Instructor_ID) VALUES (@type, @url, @cc, @iid)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@type", resource.ResourceType);
-        cmd.Parameters.AddWithValue("@url", resource.URL);
-        cmd.Parameters.AddWithValue("@cc", resource.Course_Code);
-        cmd.Parameters.AddWithValue("@iid", resource.Instructor_ID);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Manual ID Generation
+            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(Resource_ID), 0) + 1 FROM Resource", con);
+            int newId = (int)cmdId.ExecuteScalar();
+
+            string query = "INSERT INTO Resource (Resource_ID, Resource_Type, URL, Course_Code, Instructor_ID) VALUES (@id, @type, @url, @cc, @iid)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", newId);
+            cmd.Parameters.AddWithValue("@type", resource.ResourceType);
+            cmd.Parameters.AddWithValue("@url", resource.URL);
+            cmd.Parameters.AddWithValue("@cc", resource.Course_Code);
+            cmd.Parameters.AddWithValue("@iid", resource.Instructor_ID);
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -567,15 +739,21 @@ public class DB
 
     public void AddSchedule(Schedule schedule)
     {
-        string query = "INSERT INTO Schedule (SessionTime, SessionDetails, Course_Code, Instructor_ID) VALUES (@time, @details, @cc, @iid)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@time", schedule.SessionTime);
-        cmd.Parameters.AddWithValue("@details", schedule.SessionDetails);
-        cmd.Parameters.AddWithValue("@cc", schedule.Course_Code);
-        cmd.Parameters.AddWithValue("@iid", schedule.Instructor_ID);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Manual ID Generation
+            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(Schedule_ID), 0) + 1 FROM Schedule", con);
+            int newId = (int)cmdId.ExecuteScalar();
+
+            string query = "INSERT INTO Schedule (Schedule_ID, Session_Time, Session_Details, Course_Code, Instructor_ID) VALUES (@id, @time, @details, @cc, @iid)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", newId);
+            cmd.Parameters.AddWithValue("@time", schedule.SessionTime);
+            cmd.Parameters.AddWithValue("@details", schedule.SessionDetails);
+            cmd.Parameters.AddWithValue("@cc", schedule.Course_Code);
+            cmd.Parameters.AddWithValue("@iid", schedule.Instructor_ID);
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -588,15 +766,16 @@ public class DB
         }
     }
 
-    public void UpdateGrade(int initialGradeID, string newGrade)
+    public void UpdateGrade(int initialGradeID, string newGrade, string status)
     {
-        string query = "UPDATE Grade SET Progress = @grade WHERE GradeID = @gid";
+        string query = "UPDATE Grade SET Progress = @grade, Completion_Status = @status WHERE Grade_ID = @gid";
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@grade", newGrade);
+        cmd.Parameters.AddWithValue("@status", status);
         cmd.Parameters.AddWithValue("@gid", initialGradeID);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -607,19 +786,41 @@ public class DB
         {
             con.Close();
         }
+    }
+
+    public DataTable GetCourseReviews(string courseCode)
+    {
+        DataTable dt = new DataTable();
+        string query = "SELECT R.Review_Text, R.Rating, U.Name AS StudentName FROM Review R JOIN Student S ON R.Student_ID = S.Student_ID JOIN [User] U ON S.Student_ID = U.USER_ID WHERE R.Course_Code = @cc";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return dt;
     }
 
     public void AddReview(Review review)
     {
-        string query = "INSERT INTO Review (Content, Rating, Course_Code, Student_ID) VALUES (@content, @rating, @cc, @sid)";
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@content", review.Content);
-        cmd.Parameters.AddWithValue("@rating", review.Rating);
-        cmd.Parameters.AddWithValue("@cc", review.Course_Code);
-        cmd.Parameters.AddWithValue("@sid", review.Student_ID);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Manual ID Generation for Review
+            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(Review_ID), 0) + 1 FROM Review", con);
+            int newId = (int)cmdId.ExecuteScalar();
+
+            string query = "INSERT INTO Review (Review_ID, Review_Text, Rating, Course_Code, Student_ID) VALUES (@id, @content, @rating, @cc, @sid)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", newId);
+            cmd.Parameters.AddWithValue("@content", review.Content);
+            cmd.Parameters.AddWithValue("@rating", review.Rating);
+            cmd.Parameters.AddWithValue("@cc", review.Course_Code);
+            cmd.Parameters.AddWithValue("@sid", review.Student_ID);
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -636,18 +837,27 @@ public class DB
     {
         DataTable dt = new DataTable();
 
+        // Use Enrollment as base table to ensure all students appear
+        // LEFT JOIN Grade to show progress if it exists, or defaults if not
         string betterQuery = @"
-            SELECT G.GradeID, S.Student_ID, U.Name, U.Email, G.CompletionStatus, G.Progress
-            FROM Grade G
-            JOIN Student S ON G.Student_ID = S.Student_ID
-            JOIN [User] U ON S.Student_ID = U.User_ID
-            WHERE G.Course_Code = @cc";
+            SELECT 
+                ISNULL(G.Grade_ID, 0) AS Grade_ID, 
+                E.Student_ID, 
+                U.Name, 
+                U.Email, 
+                ISNULL(G.Completion_Status, 'Not Started') AS Completion_Status, 
+                ISNULL(G.Progress, 0) AS Progress
+            FROM Enrollment E
+            JOIN Student S ON E.Student_ID = S.Student_ID
+            JOIN [User] U ON S.Student_ID = U.USER_ID
+            LEFT JOIN Grade G ON E.Student_ID = G.Student_ID AND E.Course_Code = G.Course_Code
+            WHERE E.Course_Code = @cc";
 
         SqlCommand cmd = new SqlCommand(betterQuery, con);
         cmd.Parameters.AddWithValue("@cc", courseCode);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
             dt.Load(cmd.ExecuteReader());
         }
         catch (Exception ex)
@@ -730,34 +940,35 @@ public class DB
     }
     public void DeleteInstructor(Instructor I)
     {
-        string query = "Delete From Instructor where Instructor_ID=@i_id ";
-        SqlCommand cmd= new SqlCommand(query, con);
+        // Delete from [User] triggering cascade to Instructor, Teaches, etc.
+        string query = "Delete From [User] where USER_ID=@i_id ";
+        SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@i_id", I.USER_ID);
 
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
         }
-        finally 
+        finally
         {
             con.Close();
         }
     }
     public void DeleteStudent(Student S)
     {
-        string query = "Delete From Student where Student_ID=@s_id";
+        // Delete from [User] triggering cascade to Student, Enrollment, etc.
+        string query = "Delete From [User] where USER_ID=@s_id";
         SqlCommand cmd = new SqlCommand(query, con);
-
         cmd.Parameters.AddWithValue("@s_id", S.USER_ID);
 
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -768,15 +979,22 @@ public class DB
 
 
 
+
+
     public Course GetCourse(string courseCode)
     {
         Course c = new Course();
-        string query = "SELECT * FROM COURSE WHERE Course_Code = @ccode";
+        // Updated query to fetch Instructor Name
+        string query = @"SELECT C.*, U.Name AS InstructorName 
+                         FROM COURSE C 
+                         LEFT JOIN Instructor I ON C.Instructor_ID = I.Instructor_ID 
+                         LEFT JOIN [User] U ON I.Instructor_ID = U.USER_ID 
+                         WHERE C.Course_Code = @ccode";
         SqlCommand cmd = new SqlCommand(query, con);
         cmd.Parameters.AddWithValue("@ccode", courseCode);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
             SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
@@ -785,11 +1003,17 @@ public class DB
                 c.Description = reader["Description"] != DBNull.Value ? reader["Description"].ToString() : "";
                 c.Duration = reader["Duration"] != DBNull.Value ? reader["Duration"].ToString() : "";
                 c.Fees = reader["Fees"] != DBNull.Value ? Convert.ToDecimal(reader["Fees"]) : 0;
-                c.Category_ID = reader["Category_ID"] != DBNull.Value ? Convert.ToInt32(reader["Category_ID"]) : 0;
                 c.Instructor_ID = reader["Instructor_ID"] != DBNull.Value ? Convert.ToInt32(reader["Instructor_ID"]) : 0;
+                c.Category_ID = reader["Category_ID"] != DBNull.Value ? Convert.ToInt32(reader["Category_ID"]) : 0;
                 c.Admin_ID = reader["Admin_ID"] != DBNull.Value ? Convert.ToInt32(reader["Admin_ID"]) : 0;
+
+                // Populate Instructor Object
+                c.Instructor = new Instructor();
+                c.Instructor.Name = reader["InstructorName"] != DBNull.Value ? reader["InstructorName"].ToString() : "Unknown";
             }
+            reader.Close();
         }
+
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
@@ -803,7 +1027,7 @@ public class DB
     public int Approve_Instructor(Instructor I)
     {
         int result = 0;
-        string query = $"Update Instructor Set Approval_Status='{I.Approval_Status = "Approved"} where Instructor_ID={I.USER_ID}";
+        string query = $"Update Instructor Set Approval_Status='Approved' where Instructor_ID={I.USER_ID}";
         SqlCommand cmd = new SqlCommand(query, con);
 
         try
@@ -824,7 +1048,7 @@ public class DB
     public int Donot_Approve_Instructor(Instructor I)
     {
         int result = 0;
-        string query = $"Update Instructor Set Approval_Status='{I.Approval_Status = "Rejected"} where Instructor_ID={I.USER_ID}";
+        string query = $"Update Instructor Set Approval_Status='Rejected' where Instructor_ID={I.USER_ID}";
         SqlCommand cmd = new SqlCommand(query, con);
 
         try

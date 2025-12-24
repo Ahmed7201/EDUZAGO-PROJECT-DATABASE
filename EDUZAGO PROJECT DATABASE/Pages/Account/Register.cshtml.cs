@@ -29,10 +29,11 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.Account
                 return Page();
             }
 
-            if (db.RegisterUser(Input.Name, Input.Email, Input.Password))
+            if (db.RegisterUser(Input.Name, Input.Email, Input.Password, Input.Role))
             {
                 // Registration successful
-                // Optionally log them in immediately, but standard is redirect to login
+                // Registration successful
+                if (Input.Role == "Instructor") return RedirectToPage("./InstructorPending");
                 return RedirectToPage("./Login");
             }
 

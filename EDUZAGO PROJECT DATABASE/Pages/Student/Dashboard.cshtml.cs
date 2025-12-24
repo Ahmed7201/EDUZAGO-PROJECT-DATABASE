@@ -1,13 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using EDUZAGO_PROJECT_DATABASE.Models;
+using System.Data;
 
 namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
 {
     public class DashboardModel : PageModel
     {
-        public DashboardModel()
+        private readonly DB db;
+
+        public DashboardModel(DB db)
         {
+            this.db = db;
         }
 
         public EDUZAGO_PROJECT_DATABASE.Models.Student Student { get; set; }
@@ -17,30 +21,51 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("Role");
-            if (role != "Student")
+            var userIdStr = HttpContext.Session.GetString("UserId");
+
+            if (role != "Student" || string.IsNullOrEmpty(userIdStr))
             {
                 return RedirectToPage("/Account/Login");
             }
 
-            // Mock Data
-            Student = new EDUZAGO_PROJECT_DATABASE.Models.Student
-            {
-                Name = "Mock Student",
-                Email = "s-user@eduzago.com"
-            };
+            int studentId = int.Parse(userIdStr);
 
-            EnrolledCourses = new List<EDUZAGO_PROJECT_DATABASE.Models.Course>
-            {
-                new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "CS-101", Title = "Intro to C# (Mock)", Duration = "4 Weeks" },
-                new EDUZAGO_PROJECT_DATABASE.Models.Course { CourseCode = "WD-102", Title = "Web Dev Basics (Mock)", Duration = "6 Weeks" }
-            };
+            // Fetch Student Details (Optional given Session, but good for completeness)
+            // Student = db.GetStudent(studentId); // Assuming you might add this later
 
-            // Mock Aggregated Schedule
-            WeeklySchedule = new List<AggregatedScheduleItem>
+            // Fetch Real Enrollments
+            DataTable dtEnrollments = db.GetStudentEnrollments(studentId);
+
+            foreach (DataRow row in dtEnrollments.Rows)
             {
-                new AggregatedScheduleItem { CourseCode="CS-101", CourseTitle="Intro to C#", SessionDetails="Loops & Logic", SessionTime=DateTime.Now.AddDays(0) }, // Today
-                new AggregatedScheduleItem { CourseCode="WD-102", CourseTitle="Web Dev Basics", SessionDetails="HTML Forms", SessionTime=DateTime.Now.AddDays(2) }
-            };
+                EnrolledCourses.Add(new Course
+                {
+                    CourseCode = row["Course_Code"].ToString(),
+                    Title = row["Title"].ToString(),
+                    Description = row["Description"]?.ToString(),
+                    Duration = row["Duration"]?.ToString()
+                });
+            }
+
+            // Fetch Schedules for all enrolled courses
+            // This logic aggregates schedule from all enrolled courses
+            foreach (var course in EnrolledCourses)
+            {
+                DataTable dtSchedule = db.GetSchedule(course.CourseCode);
+                foreach (DataRow row in dtSchedule.Rows)
+                {
+                    WeeklySchedule.Add(new AggregatedScheduleItem
+                    {
+                        CourseCode = course.CourseCode,
+                        CourseTitle = course.Title,
+                        SessionDetails = row["Session_Details"]?.ToString(),
+                        SessionTime = row["Session_Time"] != DBNull.Value ? Convert.ToDateTime(row["Session_Time"]) : DateTime.MinValue
+                    });
+                }
+            }
+
+            // Sort schedule by date
+            WeeklySchedule = WeeklySchedule.OrderBy(s => s.SessionTime).ToList();
 
             return Page();
         }

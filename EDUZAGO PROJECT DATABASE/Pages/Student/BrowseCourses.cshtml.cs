@@ -40,11 +40,8 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             var studentIdStr = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(studentIdStr)) return RedirectToPage("/Account/Login");
 
-            int studentId = int.Parse(studentIdStr);
-            // Assuming EnrollStudent exists in DB as per project context
-            db.EnrollStudent(studentId, courseCode);
-
-            return RedirectToPage("./Dashboard");
+            // Redirect to Payment page with the selected Course Code
+            return RedirectToPage("./Payment", new { courseCode = courseCode });
         }
     }
 }

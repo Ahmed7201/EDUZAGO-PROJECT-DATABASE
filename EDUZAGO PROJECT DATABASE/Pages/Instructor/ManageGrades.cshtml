@@ -28,16 +28,21 @@
                                 value="@Model.StudentGrades[i].StudentID" />
                             <input type="hidden" name="StudentGrades[@i].StudentName"
                                 value="@Model.StudentGrades[i].StudentName" />
+                            <input type="hidden" name="StudentGrades[@i].GradeID" value="@Model.StudentGrades[i].GradeID" />
                         </td>
                         <td>@Model.StudentGrades[i].Email</td>
                         <td>
                             <select name="StudentGrades[@i].CompletionStatus" class="form-control">
-                                <option value="In Progress" selected="@(Model.StudentGrades[i].CompletionStatus == "In Progress")">In Progress</option>
-                                <option value="Completed" selected="@(Model.StudentGrades[i].CompletionStatus == "Completed")">Completed</option>
+                                <option value="In Progress"
+                                    selected="@(Model.StudentGrades[i].CompletionStatus == "In Progress")">In Progress
+                                </option>
+                                <option value="Completed"
+                                    selected="@(Model.StudentGrades[i].CompletionStatus == "Completed")">Completed</option>
                             </select>
                         </td>
                         <td>
-                             <input name="StudentGrades[@i].Progress" value="@Model.StudentGrades[i].Progress" class="form-control" placeholder="e.g. 85%" />
+                            <input name="StudentGrades[@i].Progress" value="@Model.StudentGrades[i].Progress"
+                                class="form-control" placeholder="e.g. 85%" />
                         </td>
                     </tr>
                 }
@@ -45,4 +50,43 @@
         </table>
         <button type="submit" class="btn btn-primary">Save Grades</button>
     </form>
+
+    <hr class="my-5" />
+
+    <h3>Course Reviews</h3>
+    @if (Model.Reviews.Count == 0)
+    {
+            <div class="alert alert-info">No reviews found for this course yet.</div>
+    }
+    else
+    {
+            <table class="table table-hover table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Rating</th>
+                        <th>Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var review in Model.Reviews)
+                {
+                            <tr>
+                                <td class="fw-bold">@review.StudentName</td>
+                                <td>
+                            @for (int i = 0; i < review.Rating; i++)
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                            }
+                            @for (int i = review.Rating; i < 5; i++)
+                            {
+                                <i class="bi bi-star text-muted"></i>
+                            }
+                                </td>
+                                <td>@review.ReviewText</td>
+                            </tr>
+                }
+                </tbody>
+            </table>
+    }
 </div>

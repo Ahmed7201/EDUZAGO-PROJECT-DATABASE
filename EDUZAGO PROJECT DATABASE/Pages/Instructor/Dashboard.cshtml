@@ -80,7 +80,7 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
                                                         class="bi bi-award me-2"></i>Grades</a></li>
                                             <li><a class="dropdown-item" asp-page="./ManageSchedule"
                                                     asp-route-courseId="@slot.CourseCode"><i
-                                                        class="bi bi-calendar3 me-2"></i>Full Schedule</a></li>
+                                                        class="bi bi-calendar3 me-2"></i>Manage Schedule</a></li>
                                         </ul>
                                     </div>
                                 }
@@ -92,7 +92,6 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
         </div>
     </div>
 
-    <h3>My Courses</h3>
     <h3>My Courses</h3>
     @if (Model.MyCourses.Rows.Count == 0)
     {

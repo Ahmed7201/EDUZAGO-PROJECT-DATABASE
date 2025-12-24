@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EDUZAGO_PROJECT_DATABASE.Models
 {
@@ -19,5 +20,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Models
         public string Password { get; set; } = string.Empty;
 
         public string Role { get; set; } = "Student";
+        [NotMapped]
+        public string ApprovalStatus { get; set; } = "Approved"; // Default to Approved (for Students/Admins)
     }
 }
