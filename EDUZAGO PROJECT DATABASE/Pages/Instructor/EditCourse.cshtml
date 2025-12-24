@@ -28,6 +28,9 @@
                         <th class="ps-4">Code</th>
                         <th>Title</th>
                         <th>Category ID</th>
+                        <th>Fees</th>
+                        <th>Description</th>
+                        <th>Duration</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -35,7 +38,7 @@
                     @if (Model.MyCourses.Rows.Count == 0)
                     {
                         <tr>
-                            <td colspan="4" class="text-center py-4 text-muted small">No courses found.</td>
+                            <td colspan="7" class="text-center py-4 text-muted small">No courses found.</td>
                         </tr>
                     }
                     else
@@ -46,6 +49,10 @@
                                 <td class="ps-4 fw-bold">@row["Course_Code"]</td>
                                 <td>@row["Title"]</td>
                                 <td>@row["Category_ID"]</td>
+                                <td>@row["Fees"]</td>
+                                <td class="text-truncate" style="max-width: 150px;" title="@row["Description"]">
+                                    @row["Description"]</td>
+                                <td>@row["Duration"]</td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group btn-group-sm">
                                         <a asp-page="./ManageCourse" asp-route-id="@row["Course_Code"]"
