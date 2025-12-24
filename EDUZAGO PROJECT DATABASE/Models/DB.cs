@@ -680,6 +680,43 @@ public class DB
             con.Close();
         }
     }
+    public void DeleteInstructor(Instructor I)
+    {
+        string query = "Delete From Instructor where Instructor_ID=@i_id ";
+        SqlCommand cmd= new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@i_id", I.USER_ID);
+
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally 
+        {
+            con.Close();
+        }
+    }
+    public void DeleteStudent(Student S)
+    {
+        string query = "Delete From Student where Student_ID=@s_id";
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        cmd.Parameters.AddWithValue("@s_id", S.USER_ID);
+
+        try
+        {
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
 
     public DataTable GetStudentsForCourse(string courseCode)
     {
