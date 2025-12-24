@@ -25,6 +25,8 @@
                     <tr>
                         <th class="ps-4">Code</th>
                         <th>Title</th>
+                        <th>Fees</th>
+                        <th>Duration</th>
                         <th>Category ID</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
@@ -33,7 +35,7 @@
                     @if (Model.AllCourses.Rows.Count == 0)
                     {
                         <tr>
-                            <td colspan="4" class="text-center py-4 text-muted small">No courses found in database.</td>
+                            <td colspan="6" class="text-center py-4 text-muted small">No courses found in database.</td>
                         </tr>
                     }
                     else
@@ -43,6 +45,8 @@
                             <tr>
                                 <td class="ps-4 fw-bold">@row["Course_Code"]</td>
                                 <td>@row["Title"]</td>
+                                <td>@row["Fees"]</td>
+                                <td>@row["Duration"]</td>
                                 <td>@row["Category_ID"]</td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group btn-group-sm">
