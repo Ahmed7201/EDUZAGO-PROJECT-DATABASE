@@ -47,7 +47,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
                 Reviews.Add(new ReviewViewModel
                 {
                     StudentName = row["StudentName"].ToString(),
-                    Rating = Convert.ToInt32(row["Rating"]),
+                    Rating = row["Rating"] != DBNull.Value ? Convert.ToInt32(row["Rating"]) : 0,
                     ReviewText = row["Review_Text"].ToString()
                 });
             }

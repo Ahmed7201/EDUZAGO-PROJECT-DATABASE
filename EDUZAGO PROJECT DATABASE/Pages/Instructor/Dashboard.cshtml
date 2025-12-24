@@ -77,7 +77,7 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
                                                         class="bi bi-folder2-open me-2"></i>Resources</a></li>
                                             <li><a class="dropdown-item" asp-page="./ManageGrades"
                                                     asp-route-courseId="@slot.CourseCode"><i
-                                                        class="bi bi-award me-2"></i>Grades</a></li>
+                                                        class="bi bi-award me-2"></i>Grades & Reviews</a></li>
                                             <li><a class="dropdown-item" asp-page="./ManageSchedule"
                                                     asp-route-courseId="@slot.CourseCode"><i
                                                         class="bi bi-calendar3 me-2"></i>Manage Schedule</a></li>
@@ -102,8 +102,15 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
         <div class="row">
             @foreach (System.Data.DataRow row in Model.MyCourses.Rows)
             {
+                string title = row["Title"].ToString();
+                string imagePath = "/photos/generic.png";
+                if (title.ToLower().Contains("programming") || title.ToLower().Contains("code")) imagePath = "/photos/programming.png";
+                else if (title.ToLower().Contains("database") || title.ToLower().Contains("data")) imagePath = "/photos/database.png";
+                else if (title.ToLower().Contains("design") || title.ToLower().Contains("ux") || title.ToLower().Contains("ui")) imagePath = "/photos/design.png";
+
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm border-0">
+                        <img src="@imagePath" class="card-img-top" alt="@title" style="height: 160px; object-fit: cover;">
                         <div class="card-body">
                             <h5 class="card-title text-primary">@row["Title"]</h5>
                             <h6 class="card-subtitle mb-2 text-muted">@row["Course_Code"]</h6>

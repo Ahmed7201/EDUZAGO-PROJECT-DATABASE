@@ -87,8 +87,18 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
         <div class="row">
             @foreach (var course in Model.EnrolledCourses)
             {
+                string imagePath = "/photos/generic.png";
+                if (course.Title.ToLower().Contains("programming") || course.Title.ToLower().Contains("code")) imagePath =
+                "/photos/programming.png";
+                else if (course.Title.ToLower().Contains("database") || course.Title.ToLower().Contains("data")) imagePath =
+                "/photos/database.png";
+                else if (course.Title.ToLower().Contains("design") || course.Title.ToLower().Contains("ux") ||
+                course.Title.ToLower().Contains("ui")) imagePath = "/photos/design.png";
+
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm border-0 course-card">
+                        <img src="@imagePath" class="card-img-top" alt="@course.Title"
+                            style="height: 160px; object-fit: cover;">
                         <div class="card-body">
                             <h5 class="card-title text-primary">@course.Title</h5>
                             <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-hash"></i> @course.CourseCode</h6>

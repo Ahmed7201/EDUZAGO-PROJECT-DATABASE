@@ -23,11 +23,11 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-muted text-uppercase small">
                     <tr>
-                        <th class="ps-4">Code</th>
+                        <th class="ps-4">Image</th>
+                        <th>Code</th>
                         <th>Title</th>
                         <th>Fees</th>
                         <th>Duration</th>
-                        <th>Category ID</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -42,12 +42,20 @@
                     {
                         @foreach (System.Data.DataRow row in Model.AllCourses.Rows)
                         {
+                            string title = row["Title"].ToString();
+                            string imagePath = "/photos/generic.png";
+                            if (title.ToLower().Contains("programming") || title.ToLower().Contains("code")) imagePath = "/photos/programming.png";
+                            else if (title.ToLower().Contains("database") || title.ToLower().Contains("data")) imagePath = "/photos/database.png";
+                            else if (title.ToLower().Contains("design") || title.ToLower().Contains("ux") || title.ToLower().Contains("ui")) imagePath = "/photos/design.png";
+
                             <tr>
-                                <td class="ps-4 fw-bold">@row["Course_Code"]</td>
+                                <td class="ps-4">
+                                    <img src="@imagePath" class="rounded shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                </td>
+                                <td class="fw-bold">@row["Course_Code"]</td>
                                 <td>@row["Title"]</td>
                                 <td>@row["Fees"]</td>
                                 <td>@row["Duration"]</td>
-                                <td>@row["Category_ID"]</td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group btn-group-sm">
                                         <a asp-page="/Instructor/ManageCourse" asp-route-id="@row["Course_Code"]"
