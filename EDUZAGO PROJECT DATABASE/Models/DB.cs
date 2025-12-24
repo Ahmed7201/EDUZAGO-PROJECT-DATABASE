@@ -6,7 +6,7 @@ using System.Data;
 
 public class DB
 {
-    private string connectionstring = "Data Source=;Initial Catalog=EDUZAGO_DB;Integrated Security=True;Trust Server Certificate=True;MultipleActiveResultSets=True";
+    private string connectionstring = "Data Source=ABDULLAH-LAPTOP;Initial Catalog=EDUZAGO_DB;Integrated Security=True;Trust Server Certificate=True;MultipleActiveResultSets=True";
     public SqlConnection con { get; set; }
 
     public DB()
