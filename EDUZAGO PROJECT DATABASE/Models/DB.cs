@@ -9,9 +9,406 @@ public class DB
     private string connectionstring = "Data Source=DESKTOP-SQFUII7;Initial Catalog=DB_EDUZAGO;Integrated Security=True;Trust Server Certificate=True;MultipleActiveResultSets=True";
     public SqlConnection con { get; set; }
 
+    public class WeeklyRevenue
+    {
+        public string Week { get; set; }
+        public decimal Revenue { get; set; }
+    }
+
+    public class CoursePopularity
+    {
+        public string CourseTitle { get; set; }
+        public int StudentCount { get; set; }
+    }
+
+    public class DashboardCounts
+    {
+        public int ActiveStudents { get; set; }
+        public int IdleStudents { get; set; }
+        public int ActiveInstructors { get; set; }
+        public int IdleInstructors { get; set; }
+        public int ActiveCourses { get; set; }
+        public int IdleCourses { get; set; }
+    }
+
+    public class CategoryIncome
+    {
+        public string CategoryName { get; set; }
+        public decimal TotalIncome { get; set; }
+    }
+
+    public class CourseIncome
+    {
+        public string CourseTitle { get; set; }
+        public decimal TotalIncome { get; set; }
+        public string CategoryName { get; set; }
+    }
+
+    public class CourseEnrollmentStats
+    {
+        public string CourseTitle { get; set; }
+        public int StudentCount { get; set; }
+        public string CategoryName { get; set; }
+    }
+
     public DB()
     {
         con = new SqlConnection(connectionstring);
+    }
+
+    public List<WeeklyRevenue> GetWeeklyRevenue()
+    {
+        List<WeeklyRevenue> data = new List<WeeklyRevenue>();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            // Group by Year-Week. SQL Server: DATEPART(iso_week, Enrollment_Date)
+            string query = @"
+                SELECT TOP 10 
+                    CONCAT(YEAR(Enrollment_Date), '-W', DATEPART(iso_week, Enrollment_Date)) as WeekLabel, 
+                    SUM(C.Fees) as Revenue
+                FROM Enrollment E
+                JOIN Course C ON E.Course_Code = C.Course_Code
+                GROUP BY YEAR(Enrollment_Date), DATEPART(iso_week, Enrollment_Date)
+                ORDER BY YEAR(Enrollment_Date) DESC, DATEPART(iso_week, Enrollment_Date) DESC";
+            SqlCommand cmd = new SqlCommand(query, con);
+            SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                data.Add(new WeeklyRevenue
+                {
+                    Week = r["WeekLabel"].ToString(),
+                    Revenue = r["Revenue"] != DBNull.Value ? Convert.ToDecimal(r["Revenue"]) : 0
+                });
+            }
+            r.Close();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        data.Reverse();
+        return data;
+    }
+
+    public List<CategoryIncome> GetCategoryIncome()
+    {
+        List<CategoryIncome> data = new List<CategoryIncome>();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = @"
+                SELECT Cat.Category_Name, SUM(C.Fees) as TotalIncome
+                FROM Enrollment E
+                JOIN Course C ON E.Course_Code = C.Course_Code
+                JOIN Category Cat ON C.Category_ID = Cat.Category_ID
+                GROUP BY Cat.Category_Name";
+            SqlCommand cmd = new SqlCommand(query, con);
+            SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                data.Add(new CategoryIncome
+                {
+                    CategoryName = r["Category_Name"].ToString(),
+                    TotalIncome = r["TotalIncome"] != DBNull.Value ? Convert.ToDecimal(r["TotalIncome"]) : 0
+                });
+            }
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return data;
+    }
+
+    public List<CourseIncome> GetCourseIncome()
+    {
+        List<CourseIncome> data = new List<CourseIncome>();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = @"
+                SELECT TOP 10 C.Title, Cat.Category_Name, SUM(C.Fees) as TotalIncome
+                FROM Enrollment E
+                JOIN Course C ON E.Course_Code = C.Course_Code
+                JOIN Category Cat ON C.Category_ID = Cat.Category_ID
+                GROUP BY C.Title, Cat.Category_Name
+                ORDER BY TotalIncome DESC";
+            SqlCommand cmd = new SqlCommand(query, con);
+            SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                data.Add(new CourseIncome
+                {
+                    CourseTitle = r["Title"].ToString(),
+                    CategoryName = r["Category_Name"].ToString(),
+                    TotalIncome = r["TotalIncome"] != DBNull.Value ? Convert.ToDecimal(r["TotalIncome"]) : 0
+                });
+            }
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return data;
+    }
+
+    public List<CourseEnrollmentStats> GetCourseEnrollmentStats()
+    {
+        List<CourseEnrollmentStats> data = new List<CourseEnrollmentStats>();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = @"
+                SELECT TOP 10 C.Title, Cat.Category_Name, COUNT(E.Student_ID) as StudentCount
+                FROM Enrollment E
+                JOIN Course C ON E.Course_Code = C.Course_Code
+                JOIN Category Cat ON C.Category_ID = Cat.Category_ID
+                GROUP BY C.Title, Cat.Category_Name
+                ORDER BY StudentCount DESC";
+            SqlCommand cmd = new SqlCommand(query, con);
+            SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                data.Add(new CourseEnrollmentStats
+                {
+                    CourseTitle = r["Title"].ToString(),
+                    CategoryName = r["Category_Name"].ToString(),
+                    StudentCount = r["StudentCount"] != DBNull.Value ? Convert.ToInt32(r["StudentCount"]) : 0
+                });
+            }
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return data;
+    }
+
+
+    public List<CoursePopularity> GetCoursePopularity()
+    {
+        List<CoursePopularity> data = new List<CoursePopularity>();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = @"
+                SELECT TOP 5 C.Title, COUNT(E.Student_ID) as Count
+                FROM Course C
+                LEFT JOIN Enrollment E ON C.Course_Code = E.Course_Code
+                GROUP BY C.Title
+                ORDER BY Count DESC";
+            SqlCommand cmd = new SqlCommand(query, con);
+            SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                data.Add(new CoursePopularity
+                {
+                    CourseTitle = r["Title"].ToString(),
+                    StudentCount = Convert.ToInt32(r["Count"])
+                });
+            }
+            r.Close();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return data;
+    }
+    public DashboardCounts GetDashboardCounts()
+    {
+        DashboardCounts counts = new DashboardCounts();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Active Students (Enrolled in at least one course) vs Idle (Registered but zero enrollments)
+            string qStudents = @"
+                SELECT 
+                    (SELECT COUNT(DISTINCT Student_ID) FROM Enrollment) as Active,
+                    (SELECT COUNT(*) FROM Student WHERE Student_ID NOT IN (SELECT DISTINCT Student_ID FROM Enrollment WHERE Student_ID IS NOT NULL)) as Idle";
+
+            // Active Instructors (Teaches > 0 courses) vs Idle
+            string qInstructors = @"
+                SELECT 
+                    (SELECT COUNT(DISTINCT Instructor_ID) FROM Course) as Active,
+                    (SELECT COUNT(*) FROM Instructor WHERE Instructor_ID NOT IN (SELECT DISTINCT Instructor_ID FROM Course WHERE Instructor_ID IS NOT NULL)) as Idle";
+
+            // Active Courses (Has > 0 students) vs Idle
+            string qCourses = @"
+                SELECT 
+                    (SELECT COUNT(DISTINCT Course_Code) FROM Enrollment) as Active,
+                    (SELECT COUNT(*) FROM Course WHERE Course_Code NOT IN (SELECT DISTINCT Course_Code FROM Enrollment WHERE Course_Code IS NOT NULL)) as Idle";
+
+            SqlCommand cmd1 = new SqlCommand(qStudents, con);
+            SqlDataReader r1 = cmd1.ExecuteReader();
+            if (r1.Read()) { counts.ActiveStudents = (int)r1[0]; counts.IdleStudents = (int)r1[1]; }
+            r1.Close();
+
+            SqlCommand cmd2 = new SqlCommand(qInstructors, con);
+            SqlDataReader r2 = cmd2.ExecuteReader();
+            if (r2.Read()) { counts.ActiveInstructors = (int)r2[0]; counts.IdleInstructors = (int)r2[1]; }
+            r2.Close();
+
+            SqlCommand cmd3 = new SqlCommand(qCourses, con);
+            SqlDataReader r3 = cmd3.ExecuteReader();
+            if (r3.Read()) { counts.ActiveCourses = (int)r3[0]; counts.IdleCourses = (int)r3[1]; }
+            r3.Close();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return counts;
+    }
+
+    public DataTable SearchInstructors(string term, string statusFilter)
+    {
+        DataTable dt = new DataTable();
+        string query = "Select * From Instructor,[USER] WHERE Instructor_ID=USER_ID";
+
+        if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+        {
+            query += " AND Approval_Status=@status";
+        }
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            query += " AND (Name LIKE @term OR Email LIKE @term)";
+        }
+
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+        {
+            cmd.Parameters.AddWithValue("@status", statusFilter);
+        }
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            cmd.Parameters.AddWithValue("@term", "%" + term + "%");
+        }
+
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
+    public User GetAdminProfile(int userId)
+    {
+        User u = new User();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = "SELECT * FROM [User] WHERE USER_ID = @uid";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@uid", userId);
+            SqlDataReader r = cmd.ExecuteReader();
+            if (r.Read())
+            {
+                u.USER_ID = (int)r["User_ID"];
+                u.Name = r["Name"].ToString();
+                u.Email = r["Email"].ToString();
+                u.Role = "Admin";
+            }
+            r.Close();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return u;
+    }
+
+    public void UpdateAdminProfile(User u)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = "UPDATE [User] SET Name = @name WHERE USER_ID = @uid";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@name", u.Name);
+            cmd.Parameters.AddWithValue("@uid", u.USER_ID);
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+    public bool IsEnrolled(int studentId, string courseCode)
+    {
+        bool enrolled = false;
+        string query = "SELECT COUNT(*) FROM Enrollment WHERE Student_ID = @sid AND Course_Code = @cc";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@sid", studentId);
+        cmd.Parameters.AddWithValue("@cc", courseCode);
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            int count = (int)cmd.ExecuteScalar();
+            if (count > 0) enrolled = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return enrolled;
+    }
+
+    public void MarkResourceCompleted(int studentId, int resourceId)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            // Check if already completed
+            string check = "SELECT COUNT(*) FROM ResourceCompletion WHERE Student_ID=@sid AND Resource_ID=@rid";
+            SqlCommand cmdCheck = new SqlCommand(check, con);
+            cmdCheck.Parameters.AddWithValue("@sid", studentId);
+            cmdCheck.Parameters.AddWithValue("@rid", resourceId);
+            if ((int)cmdCheck.ExecuteScalar() > 0) return;
+
+            string query = "INSERT INTO ResourceCompletion (Student_ID, Resource_ID, DateCompleted) VALUES (@sid, @rid, @date)";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", studentId);
+            cmd.Parameters.AddWithValue("@rid", resourceId);
+            cmd.Parameters.AddWithValue("@date", DateTime.Now);
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+
+    public List<int> GetCompletedResources(int studentId, string courseCode)
+    {
+        List<int> ids = new List<int>();
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = @"
+                SELECT RC.Resource_ID 
+                FROM ResourceCompletion RC
+                JOIN Resource R ON RC.Resource_ID = R.Resource_ID
+                WHERE RC.Student_ID = @sid AND R.Course_Code = @cc";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", studentId);
+            cmd.Parameters.AddWithValue("@cc", courseCode);
+            SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                ids.Add(Convert.ToInt32(r["Resource_ID"]));
+            }
+            r.Close();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return ids;
     }
 
     // Centralized DB connection handler
@@ -383,6 +780,43 @@ public class DB
         finally { con.Close(); }
     }
 
+    public bool UpdatePassword(int userId, string oldPassword, string newPassword)
+    {
+        bool success = false;
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Verify old password
+            string checkQuery = "SELECT COUNT(*) FROM [User] WHERE USER_ID = @uid AND Password = @old";
+            SqlCommand checkCmd = new SqlCommand(checkQuery, con);
+            checkCmd.Parameters.AddWithValue("@uid", userId);
+            checkCmd.Parameters.AddWithValue("@old", oldPassword);
+
+            int count = (int)checkCmd.ExecuteScalar();
+
+            if (count > 0)
+            {
+                // Update to new password
+                string updateQuery = "UPDATE [User] SET Password = @new WHERE USER_ID = @uid";
+                SqlCommand updateCmd = new SqlCommand(updateQuery, con);
+                updateCmd.Parameters.AddWithValue("@new", newPassword);
+                updateCmd.Parameters.AddWithValue("@uid", userId);
+                updateCmd.ExecuteNonQuery();
+                success = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return success;
+    }
+
     public DataTable GetAllCategories()
     {
         DataTable dt = new DataTable();
@@ -390,7 +824,29 @@ public class DB
         SqlCommand cmd = new SqlCommand(query, con);
         try
         {
-            con.Open();
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
+    public DataTable SearchCategories(string term)
+    {
+        DataTable dt = new DataTable();
+        string query = "SELECT * FROM Category WHERE Category_Name LIKE @term OR Description LIKE @term";
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@term", "%" + term + "%");
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
             dt.Load(cmd.ExecuteReader());
         }
         catch (Exception ex)
@@ -456,6 +912,51 @@ public class DB
         return dt;
     }
 
+    public DataTable SearchCoursesAdmin(string term, string categoryFilter)
+    {
+        DataTable dt = new DataTable();
+        string query = @"SELECT C.Course_Code, C.Title, C.Category_ID, C.Fees, C.Description, C.Duration, U.Name AS InstructorName 
+                         FROM Course C 
+                         LEFT JOIN Instructor I ON C.Instructor_ID = I.Instructor_ID 
+                         LEFT JOIN [User] U ON I.Instructor_ID = U.USER_ID 
+                         WHERE 1=1";
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            query += " AND C.Title LIKE @term";
+        }
+        if (!string.IsNullOrEmpty(categoryFilter))
+        {
+            query += " AND C.Category_ID = @cat";
+        }
+
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            cmd.Parameters.AddWithValue("@term", "%" + term + "%");
+        }
+        if (!string.IsNullOrEmpty(categoryFilter))
+        {
+            cmd.Parameters.AddWithValue("@cat", categoryFilter);
+        }
+
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            con.Close();
+        }
+        return dt;
+    }
+
     public DataTable GetCoursesByCategory(int Category_ID)
     {
         DataTable dt = new DataTable();
@@ -503,13 +1004,14 @@ public class DB
             cmd.ExecuteNonQuery();
 
             // 2. Initialize Grade Record (So Instructor can see them)
-            // Manual Grade_ID generation
-            SqlCommand cmdId = new SqlCommand("SELECT ISNULL(MAX(Grade_ID), 0) + 1 FROM Grade", con);
-            int newGradeId = (int)cmdId.ExecuteScalar();
+            // 2. Initialize Grade Record (So Instructor can see them)
+            // Fix: Include Instructor_ID and let Grade_ID be IDENTITY
+            string gradeQuery = @"
+                INSERT INTO Grade(Student_ID, Course_Code, Completion_Status, Progress, Instructor_ID)
+                SELECT @sid, @cc, 'In Progress', 0, Instructor_ID 
+                FROM Course WHERE Course_Code = @cc";
 
-            string gradeQuery = "INSERT INTO Grade(Grade_ID, Student_ID, Course_Code, Completion_Status, Progress) VALUES (@gid, @sid, @cc, 'In Progress', '0%')";
             SqlCommand gradeCmd = new SqlCommand(gradeQuery, con);
-            gradeCmd.Parameters.AddWithValue("@gid", newGradeId);
             gradeCmd.Parameters.AddWithValue("@sid", StudentId);
             gradeCmd.Parameters.AddWithValue("@cc", CourseCode);
             gradeCmd.ExecuteNonQuery();
@@ -522,6 +1024,102 @@ public class DB
         {
             con.Close();
         }
+    }
+
+    public DataTable GetGradeDetails(int gradeId)
+    {
+        DataTable dt = new DataTable();
+        // Join with Student and User tables to get Name/Email
+        string query = @"SELECT G.*, U.Name, U.Email, C.Title AS CourseTitle 
+                         FROM Grade G 
+                         LEFT JOIN Student S ON G.Student_ID = S.Student_ID 
+                         LEFT JOIN [User] U ON S.Student_ID = U.USER_ID 
+                         LEFT JOIN Course C ON G.Course_Code = C.Course_Code 
+                         WHERE G.Grade_ID = @gid";
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@gid", gradeId);
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return dt;
+    }
+
+    public int EnsureGradeExists(int studentId, string courseCode)
+    {
+        int gradeId = 0;
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+
+            // Check existing
+            string check = "SELECT Grade_ID FROM Grade WHERE Student_ID=@sid AND Course_Code=@cc";
+            SqlCommand cmdCheck = new SqlCommand(check, con);
+            cmdCheck.Parameters.AddWithValue("@sid", studentId);
+            cmdCheck.Parameters.AddWithValue("@cc", courseCode);
+
+            object res = cmdCheck.ExecuteScalar();
+            if (res != null && res != DBNull.Value)
+            {
+                return Convert.ToInt32(res);
+            }
+
+            // Create new if missing
+            // Grade_ID is IDENTITY, Progress is INT
+            try
+            {
+                string insert = @"
+                    INSERT INTO Grade(Student_ID, Course_Code, Completion_Status, Progress, Instructor_ID) 
+                    OUTPUT INSERTED.Grade_ID 
+                    SELECT @sid, @cc, 'In Progress', 0, Instructor_ID 
+                    FROM Course WHERE Course_Code = @cc";
+
+                SqlCommand cmd = new SqlCommand(insert, con);
+                cmd.Parameters.AddWithValue("@sid", studentId);
+                cmd.Parameters.AddWithValue("@cc", courseCode);
+                gradeId = (int)cmd.ExecuteScalar();
+            }
+            catch (Exception)
+            {
+                // If Insert failed (e.g. Unique Constraint race condition), try selecting again
+                string retryCheck = "SELECT Grade_ID FROM Grade WHERE Student_ID=@sid AND Course_Code=@cc";
+                SqlCommand cmdRetry = new SqlCommand(retryCheck, con);
+                cmdRetry.Parameters.AddWithValue("@sid", studentId);
+                cmdRetry.Parameters.AddWithValue("@cc", courseCode);
+                object resRetry = cmdRetry.ExecuteScalar();
+                if (resRetry != null && resRetry != DBNull.Value)
+                {
+                    gradeId = Convert.ToInt32(resRetry);
+                }
+            }
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return gradeId;
+    }
+
+    public int GetGradeId(int studentId, string courseCode)
+    {
+        int id = 0;
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = "SELECT Grade_ID FROM Grade WHERE Student_ID=@sid AND Course_Code=@cc";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", studentId);
+            cmd.Parameters.AddWithValue("@cc", courseCode);
+            object result = cmd.ExecuteScalar();
+            if (result != null && result != DBNull.Value)
+            {
+                id = Convert.ToInt32(result);
+            }
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return id;
     }
 
     public DataTable GetStudentEnrollments(int StudentId)
@@ -766,7 +1364,7 @@ public class DB
         }
     }
 
-    public void UpdateGrade(int initialGradeID, string newGrade, string status)
+    public void UpdateGrade(int initialGradeID, int newGrade, string status)
     {
         string query = "UPDATE Grade SET Progress = @grade, Completion_Status = @status WHERE Grade_ID = @gid";
         SqlCommand cmd = new SqlCommand(query, con);
@@ -831,6 +1429,24 @@ public class DB
         {
             con.Close();
         }
+    }
+
+    public bool HasStudentReviewed(int studentId, string courseCode)
+    {
+        bool hasReviewed = false;
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = "SELECT COUNT(*) FROM Review WHERE Student_ID = @sid AND Course_Code = @cc";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@sid", studentId);
+            cmd.Parameters.AddWithValue("@cc", courseCode);
+            int count = (int)cmd.ExecuteScalar();
+            if (count > 0) hasReviewed = true;
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return hasReviewed;
     }
 
     public DataTable GetStudentsWithGrades(string courseCode)
@@ -938,6 +1554,77 @@ public class DB
             con.Close();
         }
     }
+
+    public void ArchiveCategory(int categoryId)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            // Prefix name with "Archived - "
+            string query = "UPDATE Category SET Category_Name = CONCAT('Archived - ', Category_Name) WHERE Category_ID=@id AND Category_Name NOT LIKE 'Archived - %'";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", categoryId);
+            cmd.ExecuteNonQuery();
+
+            // CASCADE: Archive Courses by renaming them too
+            string queryCourses = "UPDATE Course SET Title = CONCAT('Archived - ', Title) WHERE Category_ID=@id AND Title NOT LIKE 'Archived - %'";
+            SqlCommand cmd2 = new SqlCommand(queryCourses, con);
+            cmd2.Parameters.AddWithValue("@id", categoryId);
+            cmd2.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+
+    public void UnarchiveCategory(int categoryId)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            // Remove "Archived - " prefix (Length 11)
+            string query = "UPDATE Category SET Category_Name = SUBSTRING(Category_Name, 12, LEN(Category_Name)) WHERE Category_ID=@id AND Category_Name LIKE 'Archived - %'";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", categoryId);
+            cmd.ExecuteNonQuery();
+
+            // CASCADE: Unarchive Courses
+            string queryCourses = "UPDATE Course SET Title = SUBSTRING(Title, 12, LEN(Title)) WHERE Category_ID=@id AND Title LIKE 'Archived - %'";
+            SqlCommand cmd2 = new SqlCommand(queryCourses, con);
+            cmd2.Parameters.AddWithValue("@id", categoryId);
+            cmd2.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+
+    public void ArchiveCourse(string courseCode)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = "UPDATE Course SET Title = CONCAT('Archived - ', Title) WHERE Course_Code=@id AND Title NOT LIKE 'Archived - %'";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", courseCode);
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+
+    public void UnarchiveCourse(string courseCode)
+    {
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            string query = "UPDATE Course SET Title = SUBSTRING(Title, 12, LEN(Title)) WHERE Course_Code=@id AND Title LIKE 'Archived - %'";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@id", courseCode);
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+    }
+
     public void DeleteInstructor(Instructor I)
     {
         // Delete from [User] triggering cascade to Instructor, Teaches, etc.
@@ -1079,12 +1766,8 @@ public class DB
 
         try
         {
-            con.Open();
-            dt.Load(cmd.ExecuteReader());
-            if (dt.Rows.Count > 0)
-            {
-                Admin_ID = Convert.ToInt32(dt.Rows[0][0]);
-            }
+            if (con.State != ConnectionState.Open) con.Open();
+            Admin_ID = (int)cmd.ExecuteScalar();
         }
         catch (Exception ex)
         {
@@ -1095,8 +1778,60 @@ public class DB
             con.Close();
         }
         return Admin_ID;
-
     }
+
+    public DataTable GetInstructors(string statusFilter)
+    {
+        DataTable dt = new DataTable();
+        string query = "Select * From Instructor,[USER] WHERE Instructor_ID=USER_ID";
+
+        if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+        {
+            query += " AND Approval_Status = @status";
+        }
+
+        SqlCommand cmd = new SqlCommand(query, con);
+        if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+        {
+            cmd.Parameters.AddWithValue("@status", statusFilter);
+        }
+
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return dt;
+    }
+
+    public DataTable SearchStudents(string term)
+    {
+        DataTable dt = new DataTable();
+        string query = "Select * From Student,[User] WHERE Student_ID=USER_ID";
+        if (!string.IsNullOrEmpty(term))
+        {
+            query += " AND (Name LIKE @term OR Email LIKE @term)";
+        }
+
+        SqlCommand cmd = new SqlCommand(query, con);
+        if (!string.IsNullOrEmpty(term))
+        {
+            cmd.Parameters.AddWithValue("@term", "%" + term + "%");
+        }
+
+        try
+        {
+            if (con.State != ConnectionState.Open) con.Open();
+            dt.Load(cmd.ExecuteReader());
+        }
+        catch (Exception ex) { Console.WriteLine(ex.Message); }
+        finally { con.Close(); }
+        return dt;
+    }
+
+
 
 
 }

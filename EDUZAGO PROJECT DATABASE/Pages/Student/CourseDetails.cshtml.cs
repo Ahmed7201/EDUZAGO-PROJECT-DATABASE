@@ -21,14 +21,23 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             db = new DB();
         }
 
-        public void OnGet(string courseId)
+        public List<int> CompletedResourceIds { get; set; } = new List<int>();
+
+        public bool HasReviewed { get; set; } = false;
+
+        public IActionResult OnGet(string courseId)
         {
+            var role = HttpContext.Session.GetString("Role");
+            if (role != "Student") return RedirectToPage("/Account/Login");
+
+            int studentId = int.Parse(HttpContext.Session.GetString("UserId") ?? "0");
+
             Course = db.GetCourse(courseId);
+            // ... existing code ...
             if (string.IsNullOrEmpty(Course.Title)) Course.Title = courseId;
-            if (string.IsNullOrEmpty(Course.Title)) Course.Title = courseId;
-            // Removed TBD fallback - Instructor Name is now fetched from DB
             if (Course.Instructor == null) Course.Instructor = new EDUZAGO_PROJECT_DATABASE.Models.Instructor { Name = "Unknown" };
 
+            // Logic to populate Resources list
             DataTable dtRes = db.GetResources(courseId);
             foreach (DataRow row in dtRes.Rows)
             {
@@ -42,6 +51,9 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
                 });
             }
 
+            // Get Completed Resources
+            CompletedResourceIds = db.GetCompletedResources(studentId, courseId);
+
             DataTable dtSch = db.GetSchedule(courseId);
             foreach (DataRow row in dtSch.Rows)
             {
@@ -54,6 +66,33 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
                     Instructor_ID = Convert.ToInt32(row["Instructor_ID"])
                 });
             }
+
+            // Fetch Grade
+            int gradeId = db.GetGradeId(studentId, courseId);
+            if (gradeId > 0)
+            {
+                DataTable dtGrade = db.GetGradeDetails(gradeId);
+                if (dtGrade.Rows.Count > 0)
+                {
+                    var progressVal = dtGrade.Rows[0]["Progress"];
+                    MyGrade = (progressVal != DBNull.Value ? progressVal.ToString() : "0") + "%";
+                }
+            }
+
+            // Check if already reviewed
+            HasReviewed = db.HasStudentReviewed(studentId, courseId);
+
+            return Page();
+        }
+
+        public IActionResult OnGetMarkResource(int resourceId)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            if (!string.IsNullOrEmpty(userId))
+            {
+                db.MarkResourceCompleted(int.Parse(userId), resourceId);
+            }
+            return new JsonResult(new { success = true });
         }
 
         public IActionResult OnPostReview(string courseId)
@@ -67,6 +106,13 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             else
             {
                 return RedirectToPage("/Account/Login");
+            }
+
+            // Double Check on Server Side
+            if (db.HasStudentReviewed(NewReview.Student_ID, courseId))
+            {
+                // Optionally add error message or just redirect
+                return RedirectToPage(new { courseId = courseId });
             }
 
             db.AddReview(NewReview);

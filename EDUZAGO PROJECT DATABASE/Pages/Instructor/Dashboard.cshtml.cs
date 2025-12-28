@@ -43,22 +43,58 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             // Use the object's ID to fetch courses
             MyCourses = db.GetInstructorCourses(CurrentInstructor);
 
-            // Populate schedule from real courses (mocking the time slots)
+            // Populate schedule from real courses
             WeeklySchedule = new List<AggregatedScheduleItem>();
-            int dayOffset = 0;
             foreach (DataRow row in MyCourses.Rows)
             {
-                WeeklySchedule.Add(new AggregatedScheduleItem
+                if (row["Course_Code"] != DBNull.Value)
                 {
-                    CourseCode = row["Course_Code"].ToString(),
-                    CourseTitle = row["Title"].ToString(),
-                    SessionDetails = "Weekly Session",
-                    SessionTime = DateTime.Now.AddDays(dayOffset % 7) // Spread across the week
-                });
-                dayOffset++;
+                    string courseCode = row["Course_Code"].ToString() ?? "";
+                    string courseTitle = row["Title"] != DBNull.Value ? row["Title"].ToString() : "Untitled";
+                    DataTable schedule = db.GetSchedule(courseCode);
+                    foreach (DataRow sRow in schedule.Rows)
+                    {
+                        WeeklySchedule.Add(new AggregatedScheduleItem
+                        {
+                            CourseCode = courseCode,
+                            CourseTitle = courseTitle,
+                            SessionDetails = sRow["Session_Details"]?.ToString(),
+                            SessionTime = sRow["Session_Time"] != DBNull.Value ? Convert.ToDateTime(sRow["Session_Time"]) : DateTime.MinValue
+                        });
+                    }
+                }
             }
 
+            // Sort schedule by date
+            WeeklySchedule = WeeklySchedule.OrderBy(s => s.SessionTime).ToList();
+
+            // Default Date
+            if (TargetDate == default) TargetDate = DateTime.Today;
+
             return Page();
+        }
+
+        [BindProperty(SupportsGet = true)]
+        public string ViewMode { get; set; } = "Week";
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime TargetDate { get; set; } = DateTime.Today;
+
+        public DateTime ViewStartDate { get; set; }
+        public DateTime ViewEndDate { get; set; }
+
+        public void CalculateDateRange()
+        {
+            if (ViewMode == "Month")
+            {
+                ViewStartDate = new DateTime(TargetDate.Year, TargetDate.Month, 1);
+                ViewEndDate = ViewStartDate.AddMonths(1).AddDays(-1);
+            }
+            else // Week
+            {
+                ViewStartDate = TargetDate.AddDays(-(int)TargetDate.DayOfWeek);
+                ViewEndDate = ViewStartDate.AddDays(6);
+            }
         }
 
         public IActionResult OnPostDeleteCourse(string id)
@@ -67,6 +103,12 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             {
                 db.DeleteCourse(id);
             }
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostArchiveCourse(string id)
+        {
+            db.ArchiveCourse(id);
             return RedirectToPage();
         }
     }

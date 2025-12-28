@@ -46,9 +46,12 @@
 
                 // Simple keyword-based image selection
                 string imagePath = "/photos/generic.png";
-                if (title.ToLower().Contains("programming") || title.ToLower().Contains("code")) imagePath = "/photos/programming.png";
-                else if (title.ToLower().Contains("database") || title.ToLower().Contains("data")) imagePath = "/photos/database.png";
-                else if (title.ToLower().Contains("design") || title.ToLower().Contains("ux") || title.ToLower().Contains("ui")) imagePath = "/photos/design.png";
+                if (title.ToLower().Contains("programming") || title.ToLower().Contains("code")) imagePath =
+                "/photos/programming.png";
+                else if (title.ToLower().Contains("database") || title.ToLower().Contains("data")) imagePath =
+                "/photos/database.png";
+                else if (title.ToLower().Contains("design") || title.ToLower().Contains("ux") || title.ToLower().Contains("ui"))
+                    imagePath = "/photos/design.png";
 
                 <div class="col-md-4">
                     <div class="card h-100 shadow-sm border-0 hover-effect">
@@ -61,18 +64,16 @@
                             <p class="card-text text-muted small flex-grow-1">
                                 @(desc.Length > 100 ? desc.Substring(0, 100) + "..." : desc)
                             </p>
-                            <div class="mt-3 d-flex justify-content-between align-items-center">
-                                <span class="fw-bold h5 mb-0 text-success">$@fees</span>
-                                <form method="post" asp-page-handler="Enroll" asp-route-courseCode="@code">
-                                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">Enroll Now</button>
-                                </form>
-                            </div>
+                            <span class="fw-bold h5 mb-0 text-success">$@fees</span>
+                            <a asp-page="./CoursePreview" asp-route-courseId="@code"
+                                class="btn btn-primary btn-sm rounded-pill px-4">View Details</a>
                         </div>
                     </div>
                 </div>
+            
             }
         }
-    </div>
+</div>
 </div>
 
 <style>

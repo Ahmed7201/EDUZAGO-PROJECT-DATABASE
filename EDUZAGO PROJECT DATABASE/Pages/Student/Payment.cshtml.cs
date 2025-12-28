@@ -27,16 +27,6 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             return Page();
         }
 
-        public IActionResult OnPost()
-        {
-            var studentIdStr = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(studentIdStr)) return RedirectToPage("/Account/Login");
 
-            // "Mock" Payment Success - Proceed to Enroll
-            int studentId = int.Parse(studentIdStr);
-            db.EnrollStudent(studentId, CourseCode);
-
-            return RedirectToPage("./Dashboard");
-        }
     }
 }

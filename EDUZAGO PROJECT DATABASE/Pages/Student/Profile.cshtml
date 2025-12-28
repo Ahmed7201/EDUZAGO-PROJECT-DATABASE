@@ -4,31 +4,85 @@
     ViewData["Title"] = "My Profile";
 }
 
-<div class="container mt-4">
-    <h2>Student Profile</h2>
-    <div class="row">
-        <div class="col-md-6">
-            <form method="post">
-                <div class="form-group mb-3">
-                    <label class="control-label">Name</label>
-                    <input asp-for="MockStudent.Name" class="form-control" />
-                </div>
-                <div class="form-group mb-3">
-                    <label class="control-label">Email</label>
-                    <input asp-for="MockStudent.Email" class="form-control" readonly />
-                    <small class="text-muted">Email cannot be changed.</small>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="control-label">Phone Number</label>
-                    <input asp-for="MockStudent.PhoneNumber" class="form-control" />
-                </div>
-                <div class="form-group mb-3">
-                    <label class="control-label">Address</label>
-                    <textarea asp-for="MockStudent.Address" class="form-control"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-page="./Dashboard" class="btn btn-secondary">Cancel</a>
-            </form>
+<div class="row mb-4 animate__animated animate__fadeIn">
+    <div class="col-md-12">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-person-circle me-2"></i>My Profile
+        </h2>
+        <p class="text-muted">Manage your student account details and security settings.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i>@Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Profile Info -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold text-dark">
+                    <i class="bi bi-person-lines-fill me-2 text-primary"></i>Personal Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="MockStudent.Name" class="form-label text-secondary fw-bold">Full Name</label>
+                        <input asp-for="MockStudent.Name" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MockStudent.Email" class="form-label text-secondary fw-bold">Email
+                            Address</label>
+                        <input asp-for="MockStudent.Email" class="form-control" readonly />
+                        <div class="form-text">Email cannot be changed.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MockStudent.PhoneNumber" class="form-label text-secondary fw-bold">Phone
+                            Number</label>
+                        <input asp-for="MockStudent.PhoneNumber" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MockStudent.Address" class="form-label text-secondary fw-bold">Address</label>
+                        <textarea asp-for="MockStudent.Address" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-2">
+                        <i class="bi bi-save me-2"></i>Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold text-dark">
+                    <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Security
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="ChangePassword">
+                    <div class="mb-3">
+                        <label asp-for="OldPassword" class="form-label text-secondary fw-bold">Current Password</label>
+                        <input asp-for="OldPassword" type="password" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="NewPassword" class="form-label text-secondary fw-bold">New Password</label>
+                        <input asp-for="NewPassword" type="password" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100 mt-2">
+                        <i class="bi bi-key me-2"></i>Change Password
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

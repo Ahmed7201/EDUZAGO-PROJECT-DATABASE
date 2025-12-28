@@ -42,5 +42,17 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             }
             return RedirectToPage();
         }
+
+        public IActionResult OnPostArchive(string id)
+        {
+            if (!string.IsNullOrEmpty(id)) db.ArchiveCourse(id);
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostUnarchive(string id)
+        {
+            if (!string.IsNullOrEmpty(id)) db.UnarchiveCourse(id);
+            return RedirectToPage();
+        }
     }
 }

@@ -1,0 +1,100 @@
+@page "{courseId}"
+@model EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace.CoursePreviewModel
+@{
+    ViewData["Title"] = "Course Preview";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a asp-page="./BrowseCourses" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Browse</a>
+    </div>
+
+    <!-- Course Header -->
+    <div class="card shadow-sm border-0 mb-4 overflow-hidden">
+        <div class="row g-0">
+             <div class="col-md-4 bg-light d-flex align-items-center justify-content-center">
+                @{
+                    string title = Model.Course.Title ?? "";
+                    string imagePath = "/photos/generic.png";
+                    if (title.ToLower().Contains("programming") || title.ToLower().Contains("code")) imagePath = "/photos/programming.png";
+                    else if (title.ToLower().Contains("database") || title.ToLower().Contains("data")) imagePath = "/photos/database.png";
+                    else if (title.ToLower().Contains("design") || title.ToLower().Contains("ux") || title.ToLower().Contains("ui")) imagePath = "/photos/design.png";
+                }
+                <img src="@imagePath" class="img-fluid" style="max-height: 300px; w-100; object-fit: cover;" alt="Course Image">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body p-4">
+                    <h1 class="display-5 fw-bold text-primary mb-2">@Model.Course.Title</h1>
+                    <p class="lead text-muted">@Model.Course.Description</p>
+
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i> @Model.Course.Duration</span>
+                        <span class="badge bg-light text-dark border"><i class="bi bi-tag me-1"></i> Fee: $@Model.Course.Fees</span>
+                        <span class="badge bg-light text-dark border"><i class="bi bi-person me-1"></i> Instructor: @(Model.Course.Instructor?.Name ?? "Unknown")</span>
+                    </div>
+
+                    @if (Model.IsEnrolled)
+                    {
+                            <div class="alert alert-success d-inline-block mb-0">
+                                <i class="bi bi-check-circle-fill me-2"></i> You are enrolled in this course.
+                            </div>
+                            <a asp-page="./CourseDetails" asp-route-courseId="@Model.Course.CourseCode" class="btn btn-success ms-2">Go to Course</a>
+                    }
+                    else
+                    {
+                            <form method="post" asp-page-handler="Enroll" asp-route-courseCode="@Model.Course.CourseCode">
+                                <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Enroll Now</button>
+                            </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-4 text-dark border-bottom pb-2">Student Reviews</h3>
+            @if (Model.Reviews.Rows.Count == 0)
+            {
+                    <div class="text-center py-5 bg-light rounded">
+                        <p class="text-muted mb-0">No reviews yet. Be the first to enroll and review!</p>
+                    </div>
+            }
+            else
+            {
+                    <div class="row g-3">
+                    @foreach (System.Data.DataRow row in Model.Reviews.Rows)
+                    {
+                        string rating = row["Rating"].ToString();
+                        string comment = row["Review_Text"].ToString();
+                        string studentName = row["StudentName"].ToString();
+                        int stars = 0;
+                        int.TryParse(rating, out stars);
+
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <h6 class="card-subtitle mb-2 text-muted fw-bold">@studentName</h6>
+                                                <div class="text-warning">
+                                            @for (int i = 0; i < stars; i++)
+                                            {
+                                                <span>★</span>
+                                            }
+                                            @for (int i = stars; i < 5; i++)
+                                            {
+                                                <span class="text-muted">☆</span>
+                                            }
+                                                </div>
+                                            </div>
+                                            <p class="card-text">"@comment"</p>
+                                        </div>
+                                    </div>
+                                </div>
+                    }
+                    </div>
+            }
+        </div>
+    </div>
+</div>

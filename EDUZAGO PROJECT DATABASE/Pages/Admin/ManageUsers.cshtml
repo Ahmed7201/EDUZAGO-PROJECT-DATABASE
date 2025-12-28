@@ -15,9 +15,30 @@
 
     <!-- INSTRUCTORS SECTION -->
     <div class="card shadow-sm border-0 mb-5">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-            <i class="bi bi-person-video3 text-primary fs-4 me-2"></i>
-            <h5 class="mb-0 text-primary">Instructors</h5>
+        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-person-video3 text-primary fs-4 me-2"></i>
+                <h5 class="mb-0 text-primary">Instructors</h5>
+            </div>
+            <form method="get" class="d-flex gap-2">
+                <!-- Identify which form submitted -->
+                 <input type="hidden" name="StudentSearch" value="@Model.StudentSearch" />
+                
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <input type="text" name="InstructorSearch" class="form-control" placeholder="Search instructors..." value="@Model.InstructorSearch">
+                    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+                    @if(!string.IsNullOrEmpty(Model.InstructorSearch)) {
+                         <a href="./ManageUsers?InstructorStatus=@Model.InstructorStatus&StudentSearch=@Model.StudentSearch" class="btn btn-outline-secondary"><i class="bi bi-x"></i></a>
+                    }
+                </div>
+
+                <div class="btn-group" role="group">
+                    <button type="submit" name="InstructorStatus" value="All" class="btn btn-sm @(Model.InstructorStatus == "All" || string.IsNullOrEmpty(Model.InstructorStatus) ? "btn-primary" : "btn-outline-primary")">All</button>
+                    <button type="submit" name="InstructorStatus" value="Pending" class="btn btn-sm @(Model.InstructorStatus == "Pending" ? "btn-warning" : "btn-outline-warning")">Pending</button>
+                    <button type="submit" name="InstructorStatus" value="Approved" class="btn btn-sm @(Model.InstructorStatus == "Approved" ? "btn-success" : "btn-outline-success")">Approved</button>
+                    <button type="submit" name="InstructorStatus" value="Rejected" class="btn btn-sm @(Model.InstructorStatus == "Rejected" ? "btn-danger" : "btn-outline-danger")">Rejected</button>
+                </div>
+            </form>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -129,9 +150,21 @@
 
     <!-- STUDENTS SECTION -->
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-            <i class="bi bi-people text-success fs-4 me-2"></i>
-            <h5 class="mb-0 text-success">Students</h5>
+        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+             <div class="d-flex align-items-center">
+                <i class="bi bi-people text-success fs-4 me-2"></i>
+                <h5 class="mb-0 text-success">Students</h5>
+            </div>
+            <form method="get" class="d-flex gap-2">
+                <input type="hidden" name="InstructorStatus" value="@Model.InstructorStatus" />
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <input type="text" name="StudentSearch" class="form-control" placeholder="Search students..." value="@Model.StudentSearch">
+                    <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
+                    @if(!string.IsNullOrEmpty(Model.StudentSearch)) {
+                         <a href="./ManageUsers?InstructorStatus=@Model.InstructorStatus" class="btn btn-outline-secondary"><i class="bi bi-x"></i></a>
+                    }
+                </div>
+            </form>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">

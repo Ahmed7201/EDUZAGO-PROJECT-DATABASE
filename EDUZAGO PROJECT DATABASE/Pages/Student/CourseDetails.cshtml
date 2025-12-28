@@ -91,9 +91,14 @@
                         <div class="list-group shadow-sm border-0">
                             @foreach (var res in Model.Resources)
                             {
+                                var isDone = Model.CompletedResourceIds.Contains(res.ResourceID);
                                 <div class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center mb-2 rounded bg-light">
-                                    <span class="fw-bold"><i class="bi bi-file-earmark-text me-2 text-primary"></i>@res.ResourceType</span>
-                                    <a href="@res.URL" class="btn btn-sm btn-outline-primary rounded-pill px-3" target="_blank">
+                                    <span class="fw-bold">
+                                        <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                        @res.ResourceType
+                                        <i id="check-@res.ResourceID" class="bi bi-check-circle-fill text-success ms-2" style="@(isDone ? "" : "display:none;")"></i>
+                                    </span>
+                                    <a href="@res.URL" class="btn btn-sm btn-outline-primary rounded-pill px-3" target="_blank" onclick="markDone(@res.ResourceID)">
                                         Download <i class="bi bi-download ms-1"></i>
                                     </a>
                                 </div>
@@ -107,6 +112,17 @@
                 </div>
             </div>
         </div>
+        
+        <script>
+            function markDone(id) {
+                // Determine if URL has query params already or not for handler syntax
+                // Actually Razor Pages handler syntax is ?handler=Name OR /HandlerName
+                // We use fetch to call the simple GET handler without reloading
+                fetch('?handler=MarkResource&resourceId=' + id);
+                document.getElementById('check-' + id).style.display = 'inline-block';
+            }
+        </script>
+
 
         <!-- TAB 3: GRADES & REVIEW -->
         <div class="tab-pane fade" id="grades" role="tabpanel">
@@ -123,23 +139,35 @@
                     <div class="card shadow-sm border-0 bg-light">
                         <div class="card-body p-4">
                             <h4 class="card-title text-dark mb-3"><i class="bi bi-star me-2"></i>Rate & Review</h4>
-                            <form method="post" asp-page-handler="Review">
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">RATING</label>
-                                    <select asp-for="NewReview.Rating" class="form-select">
-                                        <option value="5">⭐⭐⭐⭐⭐ Cannot be better</option>
-                                        <option value="4">⭐⭐⭐⭐ Also Good</option>
-                                        <option value="3">⭐⭐⭐ Nice</option>
-                                        <option value="2">⭐⭐ Bad</option>
-                                        <option value="1">⭐ Very Bad</option>
-                                    </select>
+                            
+                            @if (Model.HasReviewed)
+                            {
+                                <div class="alert alert-success text-center">
+                                    <i class="bi bi-check-circle-fill display-4 mb-3 d-block text-success"></i>
+                                    <h5>Review Submitted</h5>
+                                    <p class="mb-0">You have already submitted a review for this course. Thank you for your feedback!</p>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">COMMENT</label>
-                                    <textarea asp-for="NewReview.Content" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Submit Review</button>
-                            </form>
+                            }
+                            else
+                            {
+                                <form method="post" asp-page-handler="Review">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">RATING</label>
+                                        <select asp-for="NewReview.Rating" class="form-select">
+                                            <option value="5">⭐⭐⭐⭐⭐ Cannot be better</option>
+                                            <option value="4">⭐⭐⭐⭐ Also Good</option>
+                                            <option value="3">⭐⭐⭐ Nice</option>
+                                            <option value="2">⭐⭐ Bad</option>
+                                            <option value="1">⭐ Very Bad</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">COMMENT</label>
+                                        <textarea asp-for="NewReview.Content" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                                </form>
+                            }
                         </div>
                     </div>
                 </div>

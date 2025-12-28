@@ -24,14 +24,22 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             var role = HttpContext.Session.GetString("Role");
             if (role != "Student") return RedirectToPage("/Account/Login");
 
+            DataTable rawCourses;
             if (!string.IsNullOrEmpty(SearchText))
             {
-                Courses = db.SearchCourses(SearchText);
+                rawCourses = db.SearchCourses(SearchText); // Already filtered in DB
             }
             else
             {
-                Courses = db.GetAllCourses();
+                rawCourses = db.GetAllCourses(); // Returns All (including Archived)
             }
+
+            // Filter out Archived courses from display
+            // Use DataView for easy filtering
+            DataView dv = rawCourses.DefaultView;
+            dv.RowFilter = "Title NOT LIKE 'Archived - %'";
+            Courses = dv.ToTable();
+
             return Page();
         }
 

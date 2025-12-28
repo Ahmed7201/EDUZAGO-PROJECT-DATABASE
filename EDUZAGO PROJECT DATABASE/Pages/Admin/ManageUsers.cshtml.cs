@@ -23,13 +23,25 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
         }
 
 
+        [BindProperty(SupportsGet = true)]
+        public string InstructorStatus { get; set; } = "All";
+
+        [BindProperty(SupportsGet = true)]
+        public string StudentSearch { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string InstructorSearch { get; set; }
+
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Admin") return RedirectToPage("/Account/Login");
-            instructor_table = db.GetAllInstructors();
-            student_table = db.GetAllStudents();
 
+            // Filter & Search Instructors
+            instructor_table = db.SearchInstructors(InstructorSearch, InstructorStatus);
+
+            // Search Students
+            student_table = db.SearchStudents(StudentSearch);
 
             return Page();
         }

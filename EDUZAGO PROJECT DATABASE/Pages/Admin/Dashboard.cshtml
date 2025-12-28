@@ -4,135 +4,497 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-5">
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container-fluid mt-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="display-5 fw-bold text-dark">Admin Dashboard</h1>
-            <p class="text-muted lead mb-0">Overview of system statistics and management access.</p>
+            <h1 class="h3 fw-bold text-gray-800">Admin Dashboard</h1>
+            <p class="text-muted">Business Analytics & Management Overview</p>
         </div>
-        <div class="text-muted small text-end">
-            <i class="bi bi-clock me-1"></i> @DateTime.Now.ToString("D")
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row mb-5">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 bg-primary text-white stat-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="fs-1 fw-bold">@Model.StudentCount</div>
-                        <i class="bi bi-people fs-1 opacity-50"></i>
-                    </div>
-                    <h6 class="card-title text-uppercase opacity-75">Total Students</h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 bg-success text-white stat-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="fs-1 fw-bold">@Model.InstructorCount</div>
-                        <i class="bi bi-person-video3 fs-1 opacity-50"></i>
-                    </div>
-                    <h6 class="card-title text-uppercase opacity-75">Instructors</h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 bg-info text-white stat-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="fs-1 fw-bold">@Model.CourseCount</div>
-                        <i class="bi bi-book fs-1 opacity-50"></i>
-                    </div>
-                    <h6 class="card-title text-uppercase opacity-75">Active Courses</h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 bg-warning text-dark stat-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="fs-1 fw-bold">@Model.PendingInstructors</div>
-                        <i class="bi bi-exclamation-circle fs-1 opacity-50"></i>
-                    </div>
-                    <h6 class="card-title text-uppercase opacity-75">Pending Approvals</h6>
-                </div>
-            </div>
+        <div class="text-muted small">
+            <i class="bi bi-clock me-1"></i> @DateTime.Now.ToString("f")
         </div>
     </div>
 
+    <!-- Top Stats Row -->
+    <div class="row mb-4">
+        <!-- Students -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 border-0 border-start border-5 border-primary">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Students</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.StudentCount</div>
+                            <div class="small text-muted mt-1">
+                                <span class="text-success fw-bold">@Model.Counts.ActiveStudents Active</span> /
+                                @Model.Counts.IdleStudents Idle
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructors -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 border-0 border-start border-5 border-success">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Instructors
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.InstructorCount</div>
+                            <div class="small text-muted mt-1">
+                                <span class="text-success fw-bold">@Model.Counts.ActiveInstructors Active</span> /
+                                @Model.Counts.IdleInstructors Idle
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-person-video3 fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 border-0 border-start border-5 border-info">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Courses</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.CourseCount</div>
+                            <div class="small text-muted mt-1">
+                                <span class="text-success fw-bold">@Model.Counts.ActiveCourses Active</span> /
+                                @Model.Counts.IdleCourses Idle
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-book fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2 border-0 border-start border-5 border-warning">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Requests
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.PendingInstructors</div>
+                            <div class="small text-muted mt-1">Needs Approval</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-exclamation-circle fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Revenue Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-white">
+                    <h6 class="m-0 fw-bold text-primary">Weekly Revenue Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area" style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Pies -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 fw-bold text-primary">Student Engagement</h6>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center" style="height: 340px;">
+                    <div style="width: 250px;">
+                        <canvas id="studentPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Category Income -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 h-100">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 fw-bold text-primary">Income by Category</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="categoryIncomeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Income -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 h-100">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 fw-bold text-success">Income by Course (Top 10)</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="courseIncomeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Stats -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 h-100">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 fw-bold text-info">Students per Course</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="studentStatsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Actions -->
     <div class="row">
         <div class="col-md-4 mb-4">
-            <a asp-page="./ManageUsers" class="card border-0 shadow-sm h-100 action-card text-decoration-none">
-                <div class="card-body p-5 d-flex align-items-center">
-                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle p-4 me-4">
-                        <i class="bi bi-people-fill fs-3"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-dark fw-bold mb-1">Manage Users</h4>
-                        <p class="text-muted mb-0">Approve instructors, remove users, and oversee accounts.</p>
-                    </div>
-                    <div class="ms-auto text-muted">
-                        <i class="bi bi-chevron-right fs-4"></i>
-                    </div>
+            <a asp-page="./ManageUsers"
+                class="card border-0 shadow-sm h-100 action-card text-decoration-none bg-primary text-white">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-people-fill fs-1 mb-2"></i>
+                    <h5>Manage Users</h5>
+                    <p class="small opacity-75 mb-0">Approve & Manage Accounts</p>
                 </div>
             </a>
         </div>
         <div class="col-md-4 mb-4">
-            <a asp-page="./ManageCategories" class="card border-0 shadow-sm h-100 action-card text-decoration-none">
-                <div class="card-body p-5 d-flex align-items-center">
-                    <div class="icon-box bg-success bg-opacity-10 text-success rounded-circle p-4 me-4">
-                        <i class="bi bi-tags-fill fs-3"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-dark fw-bold mb-1">Manage Categories</h4>
-                        <p class="text-muted mb-0">Create, edit, and organize course categories.</p>
-                    </div>
-                    <div class="ms-auto text-muted">
-                        <i class="bi bi-chevron-right fs-4"></i>
-                    </div>
+            <a asp-page="./ManageCategories"
+                class="card border-0 shadow-sm h-100 action-card text-decoration-none bg-success text-white">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-tags-fill fs-1 mb-2"></i>
+                    <h5>Manage Categories</h5>
+                    <p class="small opacity-75 mb-0">Organize Course Topics</p>
                 </div>
             </a>
         </div>
         <div class="col-md-4 mb-4">
-            <a asp-page="./ManageAllCourses" class="card border-0 shadow-sm h-100 action-card text-decoration-none">
-                <div class="card-body p-5 d-flex align-items-center">
-                    <div class="icon-box bg-warning bg-opacity-10 text-dark rounded-circle p-4 me-4">
-                        <i class="bi bi-book-fill fs-3"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-dark fw-bold mb-1">Manage Courses</h4>
-                        <p class="text-muted mb-0">View, edit, or delete any course in the system.</p>
-                    </div>
-                    <div class="ms-auto text-muted">
-                        <i class="bi bi-chevron-right fs-4"></i>
-                    </div>
+            <a asp-page="./ManageAllCourses"
+                class="card border-0 shadow-sm h-100 action-card text-decoration-none bg-dark text-white">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-collection-fill fs-1 mb-2"></i>
+                    <h5>Manage Courses</h5>
+                    <p class="small opacity-75 mb-0">Oversee All Content</p>
                 </div>
             </a>
         </div>
     </div>
+
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Data passed from Razor Model
+    const revenueLabels = @Json.Serialize(Model.RevenueData.Select(x => x.Week));
+    const revenueValues = @Json.Serialize(Model.RevenueData.Select(x => x.Revenue));
+
+    // Income Data
+    const incomeLabels = @Json.Serialize(Model.IncomeData.Select(x => x.CategoryName));
+    const incomeValues = @Json.Serialize(Model.IncomeData.Select(x => x.TotalIncome));
+
+    // Revenue Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Revenue ($)',
+                data: revenueValues,
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [2] } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false }, tooltip: { intersect: false } }
+        }
+    });
+
+    // Dynamic Color Generator (Moved Up)
+    function stringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const h = Math.abs(hash % 360);
+        return `hsl(${h}, 70%, 50%)`;
+    }
+
+    // Income Chart (Bar)
+    if (document.getElementById('categoryIncomeChart')) {
+        const ctxIncome = document.getElementById('categoryIncomeChart').getContext('2d');
+        const incomeColors = incomeLabels.map(cat => stringToColor(cat));
+
+        new Chart(ctxIncome, {
+            type: 'bar',
+            data: {
+                labels: incomeLabels,
+                datasets: [{
+                    label: 'Income ($)',
+                    data: incomeValues,
+                    backgroundColor: incomeColors,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: getLegendOption(incomeLabels, incomeColors),
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = 'Income: ';
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+
+
+    // Course Income Data
+    const courseLabels = @Json.Serialize(Model.CourseIncomeData.Select(x => x.CourseTitle));
+    const courseValues = @Json.Serialize(Model.CourseIncomeData.Select(x => x.TotalIncome));
+    const courseCategories = @Json.Serialize(Model.CourseIncomeData.Select(x => x.CategoryName));
+    const courseColors = courseCategories.map(cat => stringToColor(cat));
+
+    // Helper for Shared Legend
+    function getLegendOption(labels, colors) {
+        return {
+            display: true,
+            title: {
+                display: true,
+                text: 'Categories',
+                font: { weight: 'bold' }
+            },
+            labels: {
+                generateLabels: function (chart) {
+                    const uniqueMap = new Map();
+                    labels.forEach((label, index) => {
+                        if (!uniqueMap.has(label)) {
+                            uniqueMap.set(label, colors[index]);
+                        }
+                    });
+
+                    return Array.from(uniqueMap.keys()).map(cat => ({
+                        text: cat,
+                        fillStyle: uniqueMap.get(cat),
+                        strokeStyle: uniqueMap.get(cat),
+                        hidden: false,
+                        lineWidth: 0
+                    }));
+                }
+            }
+        };
+    }
+
+    // Course Income Chart (Bar)
+    if (document.getElementById('courseIncomeChart')) {
+        const ctxCourse = document.getElementById('courseIncomeChart').getContext('2d');
+        const legendOpt = getLegendOption(courseCategories, courseColors);
+
+        new Chart(ctxCourse, {
+            type: 'bar',
+            data: {
+                labels: courseLabels,
+                datasets: [{
+                    label: 'Income ($)',
+                    data: courseValues,
+                    backgroundColor: courseColors,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: legendOpt,
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = 'Income: ';
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                }
+                                return label + ' (' + courseCategories[context.dataIndex] + ')';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Student Stats Data
+    const rawStudentLabels = @Json.Serialize(Model.StudentStatsData.Select(x => x.CourseTitle));
+    const rawStudentValues = @Json.Serialize(Model.StudentStatsData.Select(x => x.StudentCount));
+    const rawStudentCats = @Json.Serialize(Model.StudentStatsData.Select(x => x.CategoryName));
+    const idleCount = @Json.Serialize(Model.Counts.IdleStudents);
+
+    // Combine for Chart
+    const statsLabels = [...rawStudentLabels, 'Idle Students'];
+    const statsValues = [...rawStudentValues, idleCount];
+    const statsCats = [...rawStudentCats, 'Idle'];
+    const statsColors = statsCats.map(cat => stringToColor(cat));
+
+    // Student Stats Chart (Bar)
+    if (document.getElementById('studentStatsChart')) {
+        const ctxStats = document.getElementById('studentStatsChart').getContext('2d');
+        const legendOptStats = getLegendOption(statsCats, statsColors);
+
+        new Chart(ctxStats, {
+            type: 'bar',
+            data: {
+                labels: statsLabels,
+                datasets: [{
+                    label: 'Students',
+                    data: statsValues,
+                    backgroundColor: statsColors,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: legendOptStats,
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return 'Students: ' + context.parsed.y + ' (' + statsCats[context.dataIndex] + ')';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Student Engagement Pie
+    // Register custom plugin to draw text in center if needed, or use external plugin.
+    // Here we use the legend to show values.
+    const ctxPie = document.getElementById('studentPieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active Students', 'Idle Students'],
+            datasets: [{
+                data: [@Model.Counts.ActiveStudents, @Model.Counts.IdleStudents],
+                backgroundColor: ['#1cc88a', '#e74a3b'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        generateLabels: function (chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map(function (label, i) {
+                                    const meta = chart.getDatasetMeta(0);
+                                    const style = meta.controller.getStyle(i);
+                                    const value = data.datasets[0].data[i];
+
+                                    return {
+                                        text: label + ': ' + value,
+                                        fillStyle: style.backgroundColor,
+                                        strokeStyle: style.borderColor,
+                                        lineWidth: style.borderWidth,
+                                        hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.label + ': ' + context.formattedValue;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
 <style>
-    .stat-card {
-        transition: transform 0.2s;
-        border-radius: 12px;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-
     .action-card {
-        transition: all 0.2s;
-        border-radius: 16px;
+        transition: transform 0.2s;
     }
 
     .action-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 1rem 3rem rgba(0, 0, 0, .1) !important;
-        background-color: #f8f9fa;
+        transform: translateY(-5px);
+        opacity: 0.95;
     }
 </style>

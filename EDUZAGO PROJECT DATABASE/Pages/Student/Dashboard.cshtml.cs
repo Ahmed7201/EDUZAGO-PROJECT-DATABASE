@@ -67,7 +67,33 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.StudentNamespace
             // Sort schedule by date
             WeeklySchedule = WeeklySchedule.OrderBy(s => s.SessionTime).ToList();
 
+            // Set default date if needed
+            if (TargetDate == default) TargetDate = DateTime.Today;
+
             return Page();
+        }
+
+        [BindProperty(SupportsGet = true)]
+        public string ViewMode { get; set; } = "Week";
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime TargetDate { get; set; } = DateTime.Today;
+
+        public DateTime ViewStartDate { get; set; }
+        public DateTime ViewEndDate { get; set; }
+
+        public void CalculateDateRange()
+        {
+            if (ViewMode == "Month")
+            {
+                ViewStartDate = new DateTime(TargetDate.Year, TargetDate.Month, 1);
+                ViewEndDate = ViewStartDate.AddMonths(1).AddDays(-1);
+            }
+            else // Week
+            {
+                ViewStartDate = TargetDate.AddDays(-(int)TargetDate.DayOfWeek);
+                ViewEndDate = ViewStartDate.AddDays(6);
+            }
         }
 
         public class AggregatedScheduleItem

@@ -14,81 +14,162 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
             Courses</a>
     </div>
 
-    <!-- WEEKLY SCHEDULE GRID -->
+    <!-- SCHEDULE SECTION -->
     <div class="card shadow-sm border-0 mb-5">
-        <div class="card-header bg-white py-3">
-            <h4 class="mb-0 text-primary"><i class="bi bi-calendar-week me-2"></i>Your Weekly Schedule</h4>
-        </div>
-        <div class="card-body p-0">
-            <div class="schedule-grid-container">
-                <div class="row g-0">
-                    @foreach (var day in daysOfWeek)
-                    {
-                        var isToday = day == today;
-                        var daySessions = Model.WeeklySchedule.Where(s => s.SessionTime.DayOfWeek == day).OrderBy(s =>
-                        s.SessionTime).ToList();
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-danger"><i class="bi bi-calendar-event me-2"></i>Your Schedule</h4>
+            
+            <!-- Controls -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- View Toggle -->
+                <div class="btn-group shadow-sm">
+                    <a asp-page="./Dashboard" asp-route-viewMode="Week" asp-route-targetDate="@Model.TargetDate.ToString("yyyy-MM-dd")" class="btn btn-outline-danger @(Model.ViewMode == "Week" ? "active" : "")">Week</a>
+                    <a asp-page="./Dashboard" asp-route-viewMode="Month" asp-route-targetDate="@Model.TargetDate.ToString("yyyy-MM-dd")" class="btn btn-outline-danger @(Model.ViewMode == "Month" ? "active" : "")">Month</a>
+                    <a asp-page="./Dashboard" asp-route-viewMode="List" asp-route-targetDate="@Model.TargetDate.ToString("yyyy-MM-dd")" class="btn btn-outline-danger @(Model.ViewMode == "List" ? "active" : "")">Agenda</a>
+                </div>
 
-                        <div class="col day-column border-end @(isToday ? "today-column" : "")">
-                            <!-- Column Header -->
-                            <div
-                                class="day-header text-center py-2 border-bottom @(isToday ? "bg-danger text-white" : "bg-light text-muted")">
-                                <span class="d-block fw-bold text-uppercase small">@day</span>
-                                @if (isToday)
-                                {
-                                    <div class="badge bg-white text-danger mt-1" style="font-size: 0.7rem;">TODAY</div>
-                                }
-                            </div>
-
-                            <!-- Sessions Stack -->
-                            <div class="day-body p-2" style="min-height: 250px;">
-                                @if (isToday)
-                                {
-                                    <!-- Visual "NOW" Line (Approximation) -->
-                                    <div class="current-time-line mb-2 text-center text-danger small fw-bold"
-                                        style="border-bottom: 2px dashed red;">
-                                        <span class="bg-white px-1">NOW</span>
-                                    </div>
-                                }
-
-                                @foreach (var slot in daySessions)
-                                {
-                                    <div class="dropdown">
-                                        <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-primary bg-white cursor-pointer"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            <div class="badge bg-primary bg-opacity-10 text-primary mb-1">
-                                                @slot.SessionTime.ToString("HH:mm")
-                                            </div>
-                                            <div class="fw-bold text-dark text-truncate small" title="@slot.CourseTitle">
-                                                @slot.CourseCode</div>
-                                            <div class="small text-muted lh-sm text-truncate">@slot.SessionDetails</div>
-                                        </div>
-                                        <ul class="dropdown-menu shadow">
-                                            <li>
-                                                <h6 class="dropdown-header">@slot.CourseTitle</h6>
-                                            </li>
-                                            <li><a class="dropdown-item" asp-page="./ManageCourse"
-                                                    asp-route-id="@slot.CourseCode"><i class="bi bi-pencil me-2"></i>Edit
-                                                    Course</a></li>
-                                            <li><a class="dropdown-item" asp-page="./ViewStudents"
-                                                    asp-route-courseId="@slot.CourseCode"><i
-                                                        class="bi bi-people me-2"></i>View Students</a></li>
-                                            <li><a class="dropdown-item" asp-page="./ManageResources"
-                                                    asp-route-courseId="@slot.CourseCode"><i
-                                                        class="bi bi-folder2-open me-2"></i>Resources</a></li>
-                                            <li><a class="dropdown-item" asp-page="./ManageGrades"
-                                                    asp-route-courseId="@slot.CourseCode"><i
-                                                        class="bi bi-award me-2"></i>Grades & Reviews</a></li>
-                                            <li><a class="dropdown-item" asp-page="./ManageSchedule"
-                                                    asp-route-courseId="@slot.CourseCode"><i
-                                                        class="bi bi-calendar3 me-2"></i>Manage Schedule</a></li>
-                                        </ul>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                <!-- Navigation -->
+                @{
+                    DateTime prevDate, nextDate;
+                    string dateLabel = "";
+                    if (Model.ViewMode == "Month") {
+                        prevDate = Model.TargetDate.AddMonths(-1);
+                        nextDate = Model.TargetDate.AddMonths(1);
+                        dateLabel = Model.TargetDate.ToString("MMMM yyyy");
+                    } else if (Model.ViewMode == "List") {
+                         prevDate = Model.TargetDate.AddDays(-7);
+                         nextDate = Model.TargetDate.AddDays(7);
+                         dateLabel = "Agenda View";
+                    } else { // Week
+                        prevDate = Model.TargetDate.AddDays(-7);
+                        nextDate = Model.TargetDate.AddDays(7);
+                        Model.CalculateDateRange(); 
+                        dateLabel = $"{Model.ViewStartDate:MMM dd} - {Model.ViewEndDate:MMM dd, yyyy}";
                     }
+                }
+                
+                <div class="d-flex align-items-center bg-light rounded shadow-sm px-2">
+                    <a asp-page="./Dashboard" asp-route-viewMode="@Model.ViewMode" asp-route-targetDate="@prevDate.ToString("yyyy-MM-dd")" class="btn btn-link text-danger text-decoration-none"><i class="bi bi-chevron-left"></i></a>
+                    <span class="fw-bold px-2" style="min-width: 180px; text-align: center;">@dateLabel</span>
+                    <a asp-page="./Dashboard" asp-route-viewMode="@Model.ViewMode" asp-route-targetDate="@nextDate.ToString("yyyy-MM-dd")" class="btn btn-link text-danger text-decoration-none"><i class="bi bi-chevron-right"></i></a>
                 </div>
             </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (Model.ViewMode == "Week")
+            {
+                <div class="schedule-grid-container">
+                    <div class="row g-0">
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var currentDayDate = Model.ViewStartDate.AddDays(i);
+                            var isToday = currentDayDate.Date == DateTime.Today;
+                            var daySessions = Model.WeeklySchedule.Where(s => s.SessionTime.Date == currentDayDate.Date).OrderBy(s => s.SessionTime).ToList();
+
+                            <div class="col day-column border-end @(isToday ? "today-column" : "")">
+                                <div class="day-header text-center py-2 border-bottom @(isToday ? "bg-danger text-white" : "bg-light text-muted")">
+                                    <span class="d-block fw-bold text-uppercase small">@currentDayDate.DayOfWeek</span>
+                                    <span class="small">@currentDayDate.ToString("MMM dd")</span>
+                                    @if (isToday) { <div class="badge bg-white text-danger mt-1" style="font-size: 0.6rem;">TODAY</div> }
+                                </div>
+                                <div class="day-body p-2" style="min-height: 250px;">
+                                    @foreach (var slot in daySessions)
+                                    {
+                                        <div class="dropdown">
+                                            <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-danger bg-white cursor-pointer" 
+                                                 title="@slot.CourseTitle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <div class="badge bg-danger bg-opacity-10 text-dark mb-1">@slot.SessionTime.ToString("HH:mm")</div>
+                                                <div class="fw-bold text-dark text-truncate small">@slot.CourseCode</div>
+                                                <div class="small text-muted lh-sm text-truncate text-wrap">@slot.SessionDetails</div>
+                                            </div>
+                                            <ul class="dropdown-menu shadow">
+                                                <li><h6 class="dropdown-header">@slot.CourseTitle</h6></li>
+                                                <li><a class="dropdown-item" asp-page="./ManageCourse" asp-route-id="@slot.CourseCode"><i class="bi bi-pencil me-2"></i>Edit Course</a></li>
+                                                <li><a class="dropdown-item" asp-page="./ViewStudents" asp-route-courseId="@slot.CourseCode"><i class="bi bi-people me-2"></i>View Students</a></li>
+                                                <li><a class="dropdown-item" asp-page="./ManageResources" asp-route-courseId="@slot.CourseCode"><i class="bi bi-folder2-open me-2"></i>Resources</a></li>
+                                                <li><a class="dropdown-item" asp-page="./ManageGrades" asp-route-courseId="@slot.CourseCode"><i class="bi bi-award me-2"></i>Grades & Reviews</a></li>
+                                                <li><a class="dropdown-item" asp-page="./ManageSchedule" asp-route-courseId="@slot.CourseCode"><i class="bi bi-calendar3 me-2"></i>Manage Schedule</a></li>
+                                            </ul>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (Model.ViewMode == "Month")
+            {
+                Model.CalculateDateRange();
+                int daysInMonth = DateTime.DaysInMonth(Model.TargetDate.Year, Model.TargetDate.Month);
+                var firstDayOfMonth = new DateTime(Model.TargetDate.Year, Model.TargetDate.Month, 1);
+                int startDow = (int)firstDayOfMonth.DayOfWeek; 
+                
+                <div class="month-grid p-3">
+                    <div class="row g-0 mb-2">
+                        @foreach(var d in Enum.GetNames(typeof(DayOfWeek))) {
+                            <div class="col text-center fw-bold text-muted small">@d.Substring(0, 3)</div>
+                        }
+                    </div>
+                    
+                    <div class="row g-0">
+                         @for(int i=0; i < startDow; i++) { <div class="col-1 month-day empty bg-light border"></div> } 
+                         
+                         @for(int day=1; day <= daysInMonth; day++) {
+                             var date = new DateTime(Model.TargetDate.Year, Model.TargetDate.Month, day);
+                             var sessions = Model.WeeklySchedule.Where(s => s.SessionTime.Date == date).ToList();
+                             var isToday = date == DateTime.Today;
+                             
+                             <div class="col-1 month-day border p-1 @(isToday ? "bg-light border-danger" : "")" style="min-height: 100px; width: 14.28%;">
+                                 <div class="d-flex justify-content-between">
+                                     <span class="small fw-bold @(isToday ? "text-danger" : "text-muted")">@day</span>
+                                     @if(sessions.Count > 0) { <span class="badge bg-secondary rounded-pill" style="font-size: 0.6rem;">@sessions.Count</span> }
+                                 </div>
+                                 <div class="mt-1 overflow-hidden">
+                                     @foreach(var s in sessions.Take(2)) {
+                                         <div class="text-truncate small bg-danger bg-opacity-10 rounded px-1 mb-1" style="font-size: 0.7rem;" title="@s.CourseTitle">
+                                             @s.CourseCode
+                                         </div>
+                                     }
+                                     @if(sessions.Count > 2) { <div class="text-center small text-muted">+@(sessions.Count-2) more</div> }
+                                 </div>
+                             </div>
+                         }
+                    </div>
+                </div>
+            }
+            else if (Model.ViewMode == "List")
+            {
+                 var upcoming = Model.WeeklySchedule.Where(s => s.SessionTime >= DateTime.Today).OrderBy(s => s.SessionTime).ToList();
+                 <div class="list-view p-4">
+                     <h5><i class="bi bi-list-check text-success me-2"></i>Upcoming Sessions</h5>
+                     @if(upcoming.Count == 0) { <div class="alert alert-light border">No upcoming sessions found.</div> }
+                     
+                     <div class="list-group list-group-flush">
+                         @foreach(var item in upcoming) {
+                             <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                 <div>
+                                     <div class="fw-bold mb-1">
+                                         @item.SessionTime.ToString("MMM dd, yyyy") <span class="badge bg-secondary ms-2">@item.SessionTime.ToString("HH:mm")</span>
+                                     </div>
+                                     <span class="text-danger fw-bold">@item.CourseCode</span>: @item.CourseTitle - <span class="text-muted">@item.SessionDetails</span>
+                                 </div>
+                                 <div class="btn-group">
+                                     <a asp-page="./ManageCourse" asp-route-id="@item.CourseCode" class="btn btn-sm btn-outline-danger">Manage</a>
+                                     <button type="button" class="btn btn-sm btn-outline-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                         <span class="visually-hidden">Toggle Dropdown</span>
+                                     </button>
+                                     <ul class="dropdown-menu">
+                                         <li><a class="dropdown-item" asp-page="./ManageResources" asp-route-courseId="@item.CourseCode">Resources</a></li>
+                                         <li><a class="dropdown-item" asp-page="./ManageGrades" asp-route-courseId="@item.CourseCode">Grades</a></li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         }
+                     </div>
+                 </div>
+            }
         </div>
     </div>
 
@@ -114,17 +195,44 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
                         <div class="card-body">
                             <h5 class="card-title text-primary">@row["Title"]</h5>
                             <h6 class="card-subtitle mb-2 text-muted">@row["Course_Code"]</h6>
-                            <p class="card-text text-muted small">Duration: @(row.Table.Columns.Contains("Duration") ?
-                        row["Duration"] : "N/A")</p>
+                            <p class="card-text text-muted small">Duration: @(row.Table.Columns.Contains("Duration") ? row["Duration"] : "N/A")</p>
+                            
                             <div class="d-grid gap-2">
-                                <a asp-page="./ManageCourse" asp-route-id="@row["Course_Code"]"
-                                    class="btn btn-outline-primary btn-sm">Manage Course</a>
-                                <a asp-page="./ViewStudents" asp-route-courseId="@row["Course_Code"]"
-                                    class="btn btn-outline-info btn-sm">View Students</a>
-                                <form method="post" asp-page-handler="DeleteCourse" asp-route-id="@row["Course_Code"]"
-                                    onsubmit="return confirm('Are you sure you want to delete this course?');" class="d-grid">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete Course</button>
-                                </form>
+                                <a asp-page="./ManageCourse" asp-route-id="@row["Course_Code"]" class="btn btn-primary btn-sm">Manage Course</a>
+                                
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <a asp-page="./ManageResources" asp-route-courseId="@row["Course_Code"]" class="btn btn-outline-primary btn-sm w-100" title="Resources">
+                                            <i class="bi bi-folder2-open"></i> Resources
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a asp-page="./ManageGrades" asp-route-courseId="@row["Course_Code"]" class="btn btn-outline-primary btn-sm w-100" title="Grades">
+                                            <i class="bi bi-journal-text"></i> Grades
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a asp-page="./ManageSchedule" asp-route-courseId="@row["Course_Code"]" class="btn btn-outline-primary btn-sm w-100" title="Schedule">
+                                            <i class="bi bi-calendar3"></i> Schedule
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a asp-page="./ViewStudents" asp-route-courseId="@row["Course_Code"]" class="btn btn-outline-info btn-sm w-100" title="Students">
+                                           <i class="bi bi-people"></i> Students
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 mt-1">
+                                     <form method="post" asp-page-handler="DeleteCourse" asp-route-id="@row["Course_Code"]"
+                                        onsubmit="return confirm('Are you sure you want to delete this course? NOTE: If course has students, consider Archiving instead.');" class="flex-grow-1">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">Delete</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="ArchiveCourse" asp-route-id="@row["Course_Code"]" 
+                                          onsubmit="return confirm('Archive this course? (Prefix will be added to title)');" class="flex-grow-1">
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Archive</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

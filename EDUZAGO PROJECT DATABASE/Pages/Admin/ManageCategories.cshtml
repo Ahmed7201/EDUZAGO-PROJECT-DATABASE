@@ -52,8 +52,16 @@
         <!-- CATEGORIES LIST -->
         <div class="col-md-8">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 border-bottom">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-dark"><i class="bi bi-tags me-2"></i>Existing Categories</h5>
+                    <form method="get" class="d-flex">
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="SearchTerm" class="form-control" placeholder="Search categories..."
+                                value="@Model.SearchTerm">
+                            <button class="btn btn-outline-secondary" type="submit"><i
+                                    class="bi bi-search"></i></button>
+                        </div>
+                    </form>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -77,16 +85,42 @@
                             {
                                 @foreach (System.Data.DataRow item in Model.Category_table.Rows)
                                 {
+                                    var name = item["Category_Name"].ToString();
+                                    bool isArchived = name.StartsWith("Archived - ");
+                                    var displayName = isArchived ? name.Substring(11) : name;
                                     <tr>
                                         <td class="ps-4 fw-bold text-muted">#@item["Category_ID"]</td>
                                         <td>
-                                            <span class="badge bg-light text-dark border">@item["Category_Name"]</span>
+                                            @if (isArchived)
+                                            {
+                                                <span class="badge bg-warning text-dark me-1">Archived</span>
+                                            }
+                                            <span class="fw-bold text-dark">@displayName</span>
                                         </td>
                                         <td class="text-muted small">@(item["Description"] ?? "No description provided.")</td>
                                         <td class="text-end pe-4">
+                                            @if (isArchived)
+                                            {
+                                                <form method="post" asp-page-handler="Unarchive" asp-route-id="@item["Category_ID"]"
+                                                    class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning shadow-sm me-1">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-page-handler="Archive" asp-route-id="@item["Category_ID"]"
+                                                    class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary shadow-sm me-1">
+                                                        <i class="bi bi-archive"></i> Archive
+                                                    </button>
+                                                </form>
+                                            }
+
                                             <form method="post" asp-page-handler="Delete" asp-route-id="@item["Category_ID"]"
                                                 class="d-inline"
-                                                onsubmit="return confirm('Are you sure? Deleting a category usually deletes dependent courses too via Cascade.');">
+                                                onsubmit="return confirm('Are you sure you want to delete this category? If it contains active courses, consider using Archive instead to preserve data.');">
                                                 <button type="submit" class="btn btn-sm btn-danger shadow-sm">
                                                     <i class="bi bi-trash"></i> Delete
                                                 </button>

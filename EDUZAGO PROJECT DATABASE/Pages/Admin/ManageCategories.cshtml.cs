@@ -18,12 +18,22 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
         [BindProperty]
         public Category NewCategory { get; set; } = new Category();
 
+        [BindProperty(SupportsGet = true)]
+        public string? SearchTerm { get; set; }
+
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("Role");
             if (role != "Admin") return RedirectToPage("/Account/Login");
 
-            Category_table = db.GetAllCategories();
+            if (!string.IsNullOrEmpty(SearchTerm))
+            {
+                Category_table = db.SearchCategories(SearchTerm);
+            }
+            else
+            {
+                Category_table = db.GetAllCategories();
+            }
 
             return Page();
         }
@@ -46,6 +56,18 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.AdminNamespace
             Category c = new Category();
             c.CategoryID = id;
             db.DeleteCategory(c);
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostArchive(int id)
+        {
+            db.ArchiveCategory(id);
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostUnarchive(int id)
+        {
+            db.UnarchiveCategory(id);
             return RedirectToPage();
         }
     }

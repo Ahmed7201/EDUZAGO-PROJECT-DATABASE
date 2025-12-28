@@ -29,14 +29,31 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             DataTable dt = db.GetStudentsWithGrades(courseId);
             foreach (DataRow row in dt.Rows)
             {
+                int studentId = Convert.ToInt32(row["Student_ID"]);
+
+                int finalGid = 0;
+                if (row["Grade_ID"] != DBNull.Value)
+                {
+                    finalGid = Convert.ToInt32(row["Grade_ID"]);
+                }
+
+                // Guarantee Grade Exists (Fixes redirect issue for old/broken data)
+                if (finalGid == 0)
+                {
+                    // EnsureGradeExists now returns the new (or existing) ID directly
+                    finalGid = db.EnsureGradeExists(studentId, courseId);
+                    // Do not update row["Grade_ID"] since it's read-only
+                }
+
+
                 StudentGrades.Add(new StudentGradeViewModel
                 {
-                    GradeID = row["Grade_ID"] != DBNull.Value ? Convert.ToInt32(row["Grade_ID"]) : 0,
-                    StudentID = Convert.ToInt32(row["Student_ID"]),
+                    GradeID = finalGid,
+                    StudentID = studentId,
                     StudentName = row["Name"].ToString(),
                     Email = row["Email"].ToString(),
-                    CompletionStatus = row["Completion_Status"].ToString(),
-                    Progress = row["Progress"].ToString()
+                    CompletionStatus = row["Completion_Status"] != DBNull.Value ? row["Completion_Status"].ToString() : "In Progress",
+                    Progress = row["Progress"] != DBNull.Value ? Convert.ToInt32(row["Progress"]) : 0
                 });
             }
 
@@ -53,17 +70,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             }
         }
 
-        public IActionResult OnPost(string courseId)
-        {
-            foreach (var student in StudentGrades)
-            {
-                if (student.GradeID > 0)
-                {
-                    db.UpdateGrade(student.GradeID, student.Progress, student.CompletionStatus);
-                }
-            }
-            return RedirectToPage(new { courseId = courseId });
-        }
+
 
         public class StudentGradeViewModel
         {
@@ -72,7 +79,7 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             public string StudentName { get; set; } = "";
             public string Email { get; set; } = "";
             public string CompletionStatus { get; set; } = "";
-            public string Progress { get; set; } = "";
+            public int Progress { get; set; }
             public string CertificateDetails { get; set; } = "";
         }
 

@@ -32,6 +32,12 @@
                 </div>
 
                 <div class="form-floating mb-3">
+                    <input asp-for="Input.ConfirmPassword" class="form-control" placeholder="Confirm Password" />
+                    <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                </div>
+
+                <div class="form-floating mb-3">
                     <select asp-for="Input.Role" class="form-select">
                         <option value="Student">Student</option>
                         <option value="Instructor">Instructor</option>

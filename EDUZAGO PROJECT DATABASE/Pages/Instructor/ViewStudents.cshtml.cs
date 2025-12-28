@@ -23,8 +23,8 @@ namespace EDUZAGO_PROJECT_DATABASE.Pages.InstructorNamespace
             {
                 return RedirectToPage("./Dashboard");
             }
-
             CourseId = courseId;
+
             Students = db.GetStudentsForCourse(courseId);
 
             return Page();

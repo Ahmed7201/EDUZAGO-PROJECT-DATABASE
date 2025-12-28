@@ -15,60 +15,147 @@ DayOfWeek.Friday, DayOfWeek.Saturday };
     </div>
 
     <!-- WEEKLY SCHEDULE GRID -->
+    <!-- SCHEDULE SECTION -->
     <div class="card shadow-sm border-0 mb-5">
-        <div class="card-header bg-white py-3">
-            <h4 class="mb-0 text-primary"><i class="bi bi-calendar-week me-2"></i>My Weekly Schedule</h4>
-        </div>
-        <div class="card-body p-0">
-            <div class="schedule-grid-container">
-                <div class="row g-0">
-                    @foreach (var day in daysOfWeek)
-                    {
-                        var isToday = day == today;
-                        var daySessions = Model.WeeklySchedule.Where(s => s.SessionTime.DayOfWeek == day).OrderBy(s =>
-                        s.SessionTime).ToList();
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-primary"><i class="bi bi-calendar-event me-2"></i>My Schedule</h4>
+            
+            <!-- Controls -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- View Toggle -->
+                <div class="btn-group shadow-sm">
+                    <a asp-page="./Dashboard" asp-route-viewMode="Week" asp-route-targetDate="@Model.TargetDate.ToString("yyyy-MM-dd")" class="btn btn-outline-primary @(Model.ViewMode == "Week" ? "active" : "")">Week</a>
+                    <a asp-page="./Dashboard" asp-route-viewMode="Month" asp-route-targetDate="@Model.TargetDate.ToString("yyyy-MM-dd")" class="btn btn-outline-primary @(Model.ViewMode == "Month" ? "active" : "")">Month</a>
+                    <a asp-page="./Dashboard" asp-route-viewMode="List" asp-route-targetDate="@Model.TargetDate.ToString("yyyy-MM-dd")" class="btn btn-outline-primary @(Model.ViewMode == "List" ? "active" : "")">To Do List</a>
+                </div>
 
-                        <div class="col day-column border-end @(isToday ? "today-column" : "")">
-                            <!-- Column Header -->
-                            <div
-                                class="day-header text-center py-2 border-bottom @(isToday ? "bg-primary text-white" : "bg-light text-muted")">
-                                <span class="d-block fw-bold text-uppercase small">@day</span>
-                                @if (isToday)
-                                {
-                                    <div class="badge bg-white text-primary mt-1" style="font-size: 0.7rem;">TODAY</div>
-                                }
-                            </div>
-
-                            <!-- Sessions Stack -->
-                            <div class="day-body p-2" style="min-height: 250px;">
-                                @if (isToday)
-                                {
-                                    <!-- Visual "NOW" Line (Approximation) -->
-                                    <div class="current-time-line mb-2 text-center text-primary small fw-bold"
-                                        style="border-bottom: 2px dashed #0d6efd;">
-                                        <span class="bg-white px-1">NOW</span>
-                                    </div>
-                                }
-
-                                @foreach (var slot in daySessions)
-                                {
-                                    <a asp-page="./CourseDetails" asp-route-courseId="@slot.CourseCode"
-                                        class="text-decoration-none">
-                                        <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-info bg-white cursor-pointer"
-                                            title="Go to Course Details">
-                                            <div class="badge bg-info bg-opacity-10 text-dark mb-1">
-                                                @slot.SessionTime.ToString("HH:mm")
-                                            </div>
-                                            <div class="fw-bold text-dark text-truncate small">@slot.CourseCode</div>
-                                            <div class="small text-muted lh-sm text-truncate">@slot.SessionDetails</div>
-                                        </div>
-                                    </a>
-                                }
-                            </div>
-                        </div>
+                <!-- Navigation -->
+                @{
+                    DateTime prevDate, nextDate;
+                    string dateLabel = "";
+                    if (Model.ViewMode == "Month") {
+                        prevDate = Model.TargetDate.AddMonths(-1);
+                        nextDate = Model.TargetDate.AddMonths(1);
+                        dateLabel = Model.TargetDate.ToString("MMMM yyyy");
+                    } else if (Model.ViewMode == "List") {
+                         // List view just navigates generic or stays put, but let's allow Prev/Next to move week by week reference or just hide
+                         prevDate = Model.TargetDate.AddDays(-7);
+                         nextDate = Model.TargetDate.AddDays(7);
+                         dateLabel = "Tasks View";
+                    } else { // Week
+                        prevDate = Model.TargetDate.AddDays(-7);
+                        nextDate = Model.TargetDate.AddDays(7);
+                        Model.CalculateDateRange(); // Ensure range calculated
+                        dateLabel = $"{Model.ViewStartDate:MMM dd} - {Model.ViewEndDate:MMM dd, yyyy}";
                     }
+                }
+                
+                <div class="d-flex align-items-center bg-light rounded shadow-sm px-2">
+                    <a asp-page="./Dashboard" asp-route-viewMode="@Model.ViewMode" asp-route-targetDate="@prevDate.ToString("yyyy-MM-dd")" class="btn btn-link text-dark text-decoration-none"><i class="bi bi-chevron-left"></i></a>
+                    <span class="fw-bold px-2" style="min-width: 180px; text-align: center;">@dateLabel</span>
+                    <a asp-page="./Dashboard" asp-route-viewMode="@Model.ViewMode" asp-route-targetDate="@nextDate.ToString("yyyy-MM-dd")" class="btn btn-link text-dark text-decoration-none"><i class="bi bi-chevron-right"></i></a>
                 </div>
             </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (Model.ViewMode == "Week")
+            {
+                <div class="schedule-grid-container">
+                    <div class="row g-0">
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var currentDayDate = Model.ViewStartDate.AddDays(i);
+                            var isToday = currentDayDate.Date == DateTime.Today;
+                            var daySessions = Model.WeeklySchedule.Where(s => s.SessionTime.Date == currentDayDate.Date).OrderBy(s => s.SessionTime).ToList();
+
+                            <div class="col day-column border-end @(isToday ? "today-column" : "")">
+                                <div class="day-header text-center py-2 border-bottom @(isToday ? "bg-primary text-white" : "bg-light text-muted")">
+                                    <span class="d-block fw-bold text-uppercase small">@currentDayDate.DayOfWeek</span>
+                                    <span class="small">@currentDayDate.ToString("MMM dd")</span>
+                                    @if (isToday) { <div class="badge bg-white text-primary mt-1" style="font-size: 0.6rem;">TODAY</div> }
+                                </div>
+                                <div class="day-body p-2" style="min-height: 250px;">
+                                    @foreach (var slot in daySessions)
+                                    {
+                                        <a asp-page="./CourseDetails" asp-route-courseId="@slot.CourseCode" class="text-decoration-none">
+                                            <div class="session-card p-2 mb-2 rounded shadow-sm border-start border-4 border-info bg-white" title="@slot.CourseTitle">
+                                                <div class="badge bg-info bg-opacity-10 text-dark mb-1">@slot.SessionTime.ToString("HH:mm")</div>
+                                                <div class="fw-bold text-dark text-truncate small">@slot.CourseCode</div>
+                                                <div class="small text-muted lh-sm text-truncate text-wrap">@slot.SessionDetails</div>
+                                            </div>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (Model.ViewMode == "Month")
+            {
+                Model.CalculateDateRange();
+                int daysInMonth = DateTime.DaysInMonth(Model.TargetDate.Year, Model.TargetDate.Month);
+                var firstDayOfMonth = new DateTime(Model.TargetDate.Year, Model.TargetDate.Month, 1);
+                int startDow = (int)firstDayOfMonth.DayOfWeek; // 0 = Sunday
+                
+                <div class="month-grid p-3">
+                    <!-- Weekday Headers -->
+                    <div class="row g-0 mb-2">
+                        @foreach(var d in Enum.GetNames(typeof(DayOfWeek))) {
+                            <div class="col text-center fw-bold text-muted small">@d.Substring(0, 3)</div>
+                        }
+                    </div>
+                    
+                    <div class="row g-0">
+                         @for(int i=0; i < startDow; i++) { <div class="col-1 month-day empty bg-light border"></div> } <!-- Empty Start -->
+                         
+                         @for(int day=1; day <= daysInMonth; day++) {
+                             var date = new DateTime(Model.TargetDate.Year, Model.TargetDate.Month, day);
+                             var sessions = Model.WeeklySchedule.Where(s => s.SessionTime.Date == date).ToList();
+                             var isToday = date == DateTime.Today;
+                             
+                             <div class="col-1 month-day border p-1 @(isToday ? "bg-light border-primary" : "")" style="min-height: 100px; width: 14.28%;">
+                                 <div class="d-flex justify-content-between">
+                                     <span class="small fw-bold @(isToday ? "text-primary" : "text-muted")">@day</span>
+                                     @if(sessions.Count > 0) { <span class="badge bg-secondary rounded-pill" style="font-size: 0.6rem;">@sessions.Count</span> }
+                                 </div>
+                                 <div class="mt-1 overflow-hidden">
+                                     @foreach(var s in sessions.Take(2)) {
+                                         <div class="text-truncate small bg-info bg-opacity-10 rounded px-1 mb-1" style="font-size: 0.7rem;" title="@s.CourseTitle">
+                                             @s.CourseCode
+                                         </div>
+                                     }
+                                     @if(sessions.Count > 2) { <div class="text-center small text-muted">+@(sessions.Count-2) more</div> }
+                                 </div>
+                             </div>
+                         }
+                    </div>
+                </div>
+            }
+            else if (Model.ViewMode == "List")
+            {
+                 // To-Do List View: Upcoming tasks sorted
+                 var upcoming = Model.WeeklySchedule.Where(s => s.SessionTime >= DateTime.Today).OrderBy(s => s.SessionTime).ToList();
+                 <div class="list-view p-4">
+                     <h5><i class="bi bi-check2-square text-success me-2"></i>Upcoming Classes & Tasks</h5>
+                     @if(upcoming.Count == 0) { <div class="alert alert-light border">No upcoming tasks found.</div> }
+                     
+                     <div class="list-group list-group-flush">
+                         @foreach(var item in upcoming) {
+                             <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                 <div>
+                                     <div class="fw-bold mb-1">
+                                         @item.SessionTime.ToString("MMM dd, yyyy") <span class="badge bg-secondary ms-2">@item.SessionTime.ToString("HH:mm")</span>
+                                     </div>
+                                     <span class="text-primary fw-bold">@item.CourseCode</span>: @item.CourseTitle - <span class="text-muted">@item.SessionDetails</span>
+                                 </div>
+                                 <a asp-page="./CourseDetails" asp-route-courseId="@item.CourseCode" class="btn btn-sm btn-outline-primary">View</a>
+                             </div>
+                         }
+                     </div>
+                 </div>
+            }
         </div>
     </div>
 
